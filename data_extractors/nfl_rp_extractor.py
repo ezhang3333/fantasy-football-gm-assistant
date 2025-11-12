@@ -183,11 +183,15 @@ class NFLReadExtractor:
     # for now dont use this either because its so large data set
     def load_rosters_weekly(self):
         rosters_weekly = nfl_rp.load_rosters_weekly(self.current_season).to_pandas()
+        rosters_weekly = rosters_weekly[
+            (rosters_weekly['position'].isin(self.default_positions)) &
+            (rosters_weekly['status'] == 'ACT')]
         return rosters_weekly.reindex(columns=self.keep["rosters_weekly"])
 
     # probably cross reference this with one of the load_players or load_rosters 
     def load_snap_counts(self):
         snap_counts = nfl_rp.load_snap_counts(self.current_season).to_pandas()
+        snap_counts = snap_counts[snap_counts['position'].isin(self.default_positions)]
         return snap_counts.reindex(columns=self.keep["snap_counts"])
 
     # this is weekly by the way
