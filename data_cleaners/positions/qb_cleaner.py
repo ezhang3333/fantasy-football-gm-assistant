@@ -50,6 +50,7 @@ class QBCleaner:
         df["delta_air_yards"] = g["pass_air_yards"].diff()
         df["delta_cpoe"] = g["completion_percentage_above_expectation"].diff()
 
+        # past 3 weeks
         df["attempts_3wk_avg"] = g["pass_attempt"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
         df["air_yards_3wk_avg"] = g["pass_air_yards"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
 
@@ -76,6 +77,17 @@ class QBCleaner:
         self.cleaned_data = df
         return df
 
+    def calculate_fantasy_points(passing_yards, rushing_yards, passing_touchdowns, rushing_touchdowns, interceptions, fumbles):
+        return (
+                0.04 * passing_yards 
+                + 0.1 * rushing_yards 
+                + 4 * passing_touchdowns 
+                + 6 * rushing_touchdowns 
+                - interceptions 
+                - 2 * fumbles
+            )
+
+    
 
 
 # add trendy stats like past 5 weeks usage and target share or like past 3 weeks, decide the number of weeks later        

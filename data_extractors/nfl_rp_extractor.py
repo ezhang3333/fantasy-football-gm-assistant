@@ -150,6 +150,10 @@ class NFLReadExtractor:
             'nextgen_stats': self.load_nextgen_stats(),
             'ff_opportunity': self.load_ff_opportunity()
         }
+    
+    def calculate_def_rankings(self):
+        defense = pd.read_csv('data_extractors/data/team_week_adv_2025.csv')
+        print(defense.columns.tolist())
 
     def load_player_stats(self):
         player_stats = nfl_rp.load_player_stats(self.current_season, 'reg').to_pandas()
