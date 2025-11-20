@@ -151,11 +151,6 @@ class NFLReadExtractor:
             'nextgen_stats': self.load_nextgen_stats(),
             'ff_opportunity': self.load_ff_opportunity()
         }
-    
-    def calculate_def_rankings(self):
-        pfr_scraper = PFRWebScraper()
-        team_def_stats, adv_def_stats = pfr_scraper.scrape_team_def_stats()
-
         
 
     def load_player_stats(self):

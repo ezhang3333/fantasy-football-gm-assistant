@@ -7,8 +7,22 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
+from data_cleaners.pfr_def_cleaner import PFRDefCleaner
 import time
 
+"""
+team_def_stats : [
+        'Rk', 'Tm', 'G', 'PA', 'Yds', 'Ply', 'Y/P', 'TO', 'FL', '1stD', 'Cmp',
+       'Att', 'Yds', 'TD', 'Int', 'NY/A', '1stD', 'Att', 'Yds', 'TD', 'Y/A',
+       '1stD', 'Pen', 'Yds', '1stPy', 'Sc%', 'TO%', 'EXP'
+    ]
+
+adv_def_stats : [
+        'Tm', 'G', 'Att', 'Cmp', 'Yds', 'TD', 'DADOT', 'Air', 'YAC', 'Bltz',
+       'Bltz%', 'Hrry', 'Hrry%', 'QBKD', 'QBKD%', 'Sk', 'Prss', 'Prss%',
+       'MTkl'
+    ]
+"""
 class PFRWebScraper:
     def __init__(self):
         # TODO: create get current season function
@@ -36,9 +50,9 @@ class PFRWebScraper:
 
         team_def_stats_uncleaned = self.extract_pfr_table(html, "all_team_stats")
         team_def_stats = self.clean_team_def_stats(team_def_stats_uncleaned)
-        adv_def = self.extract_pfr_table(html, "all_advanced_defense")
+        adv_def_stats = self.extract_pfr_table(html, "all_advanced_defense")
 
-        return team_def_stats, adv_def
+        return team_def_stats, adv_def_stats
     
     def extract_pfr_table(self, html, wrapper_id, table_id=None):
         soup = BeautifulSoup(html, "html.parser")
@@ -77,11 +91,3 @@ class PFRWebScraper:
 
         df = df.reset_index(drop=True)
         return df
-
-    
-""" Testing Web Scraper
-hi = PFRWebScraper()
-tuple = hi.scrape_team_def_stats()
-tuple[0].to_csv('data/team_def_stats.csv', index=False)
-tuple[1].to_csv('data/adv_def_stats.csv', index=False)
-"""
