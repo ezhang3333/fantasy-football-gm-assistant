@@ -1,5 +1,6 @@
 import pandas as pd
 import nflreadpy as nfl_rp
+from data_extractors.pfr_web_scraper import PFRWebScraper
 
 class NFLReadExtractor:
     def __init__(self, current_season):
@@ -152,8 +153,10 @@ class NFLReadExtractor:
         }
     
     def calculate_def_rankings(self):
-        defense = pd.read_csv('data_extractors/data/team_week_adv_2025.csv')
-        print(defense.columns.tolist())
+        pfr_scraper = PFRWebScraper()
+        team_def_stats, adv_def_stats = pfr_scraper.scrape_team_def_stats()
+
+        
 
     def load_player_stats(self):
         player_stats = nfl_rp.load_player_stats(self.current_season, 'reg').to_pandas()
