@@ -1,3 +1,3 @@
 Goals In Priority:
-1. qb_data file in data_cleaners/data has some NaNs in the calculated stats because they are fillna(0) but cant just fillna(0) everything
+1. Finalize the qb dataset by selecting the correct weeks to incldue in the finalized dataset and the correct features which should only bethe calculated stats
 2. Once you finish goal 1, you should be able to have the finalized dataset for the qb model so then work on thw wr,te and rb ones
