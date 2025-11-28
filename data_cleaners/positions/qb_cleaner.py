@@ -53,21 +53,42 @@ class QBCleaner:
 
         df = df.sort_values(["gsis_id", "week"])
 
-        att = df["pass_attempt"].fillna(0)
+        zero_fill_cols = [
+            "pass_attempt",
+            "pass_air_yards",
+            "pass_yards_gained",
+            "pass_touchdown",
+            "pass_interception",
+            "rush_yards_gained",
+            "rush_fumble_lost",
+            "rush_attempt",
+            "rush_touchdown",
+            "completion_percentage_above_expectation",
+        ]
+
+        for col in zero_fill_cols:
+            if col in df.columns:
+                df[col] = df[col].fillna(0)
+
+        if "total" in df.columns:
+            df["total"] = df["total"].astype(float).fillna(0)
+        if "spread_line" in df.columns:
+            df["spread_line"] = df["spread_line"].astype(float).fillna(0)
+
+        att = df["pass_attempt"]
         att_safe = att.clip(lower=1)
 
-        df["air_yards_per_att"] = df["pass_air_yards"].fillna(0) / att_safe
-        df["yards_per_att"] = df["pass_yards_gained"].fillna(0) / att_safe
-        df["td_rate"] = df["pass_touchdown"].fillna(0) / att_safe
-        df["int_rate"] = df["pass_interception"].fillna(0) / att_safe
+        df["air_yards_per_att"] = df["pass_air_yards"] / att_safe
+        df["yards_per_att"] = df["pass_yards_gained"] / att_safe
+        df["td_rate"] = df["pass_touchdown"] / att_safe
+        df["int_rate"] = df["pass_interception"] / att_safe
 
-        passing_part = 0.04 * df["pass_yards_gained"].fillna(0)
-        rushing_part = 0.1  * df["rush_yards_gained"].fillna(0)
-        # assuming 4 point passing touchdowns
-        pass_tds     = 4.0  * df["pass_touchdown"].fillna(0)
-        rush_tds     = 6.0  * df["rush_touchdown"].fillna(0)
-        interceptions = -1.0 * df["pass_interception"].fillna(0)
-        fumbles       = -2.0 * df["rush_fumble_lost"].fillna(0)
+        passing_part = 0.04 * df["pass_yards_gained"]
+        rushing_part = 0.10 * df["rush_yards_gained"]
+        pass_tds     = 4.0  * df["pass_touchdown"]
+        rush_tds     = 6.0  * df["rush_touchdown"]
+        interceptions = -1.0 * df["pass_interception"]
+        fumbles       = -2.0 * df["rush_fumble_lost"]
 
         df["fantasy_points"] = (
             passing_part
@@ -82,9 +103,9 @@ class QBCleaner:
 
         g = df.groupby("gsis_id", group_keys=False)
 
-        df["delta_attempts"] = g["pass_attempt"].diff()
-        df["delta_air_yards"] = g["pass_air_yards"].diff()
-        df["delta_cpoe"] = g["completion_percentage_above_expectation"].diff()
+        df["delta_attempts"] = g["pass_attempt"].diff().fillna(0)
+        df["delta_air_yards"] = g["pass_air_yards"].diff().fillna(0)
+        df["delta_cpoe"] = g["completion_percentage_above_expectation"].diff().fillna(0)
 
         df["fantasy_3wk_avg"] = (
             g["fantasy_points"]
@@ -134,11 +155,11 @@ class QBCleaner:
 
         df["air_yards_trend_3v7"] = df["air_yards_3wk_avg"] - df["air_yards_7wk_avg"]
 
-        rush_att = df["rush_attempt"].fillna(0)
+        rush_att = df["rush_attempt"]
         rush_att_safe = rush_att.clip(lower=1)
 
-        df["rush_td_rate"] = df["rush_touchdown"].fillna(0) / rush_att_safe
-        df["rush_yards_per_game"] = df["rush_yards_gained"].fillna(0)
+        df["rush_td_rate"] = df["rush_touchdown"] / rush_att_safe
+        df["rush_yards_per_game"] = df["rush_yards_gained"]
 
         df["rush_yards_3wk_avg"] = (
             g["rush_yards_gained"]
@@ -156,8 +177,8 @@ class QBCleaner:
 
         df["rush_trend_3v7"] = df["rush_yards_3wk_avg"] - df["rush_yards_7wk_avg"]
 
-        total = df["total"].astype(float)
-        spread = df["spread_line"].astype(float)
+        total = df["total"]
+        spread = df["spread_line"]
 
         home_implied = total / 2.0 - spread / 2.0
         away_implied = total / 2.0 + spread / 2.0
@@ -168,17 +189,20 @@ class QBCleaner:
             away_implied,
         )
 
-        qb_def = self.qb_def_stats.rename(columns={"Tm": "opponent"})
+        qb_def = self.qb_def_stats.rename(columns={"Tm": "opponent"}).copy()
         qb_def["opponent"] = qb_def["opponent"].map(TEAM_NAME_TO_ABBR)
-        print(qb_def["opponent"])
+
+        pressure_rate_median = qb_def["pressure_rate_def"].median()
+
         df = df.merge(
             qb_def[["opponent", "pass_defense_rank", "pressure_rate_def"]],
             how="left",
             on="opponent",
         )
 
-        df["pass_defense_rank"] = df["pass_defense_rank"].fillna(0)
-        df["pressure_rate_def"] = df["pressure_rate_def"].fillna(0)
+        df["pass_defense_rank"] = df["pass_defense_rank"].fillna(16.5)
+        df["pressure_rate_def"] = df["pressure_rate_def"].fillna(pressure_rate_median)
+
         df["is_rookie"] = (df["years_exp"] == 0).astype(int)
         df["is_second_year"] = (df["years_exp"] == 1).astype(int)
 
@@ -187,5 +211,10 @@ class QBCleaner:
 
         df["years_exp"] = df["years_exp"].fillna(0).astype(float)
 
+        if hasattr(self, "calculated_stats"):
+            cols_to_fill = [c for c in self.calculated_stats if c in df.columns]
+            df[cols_to_fill] = df[cols_to_fill].fillna(0)
+
         self.cleaned_data = df
         return df
+
