@@ -2,3 +2,4 @@ Goals In Priority:
 1. Read constants.py and create the rb_cleaner and wr_and_te_cleaner
 2. Make rb and wr/te finalized datasets
 3. Create gradient boosted tree model
+4. Think about adding a game script feature for all positions

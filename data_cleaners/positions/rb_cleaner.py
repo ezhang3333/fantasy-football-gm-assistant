@@ -7,14 +7,14 @@ class RBCleaner:
     def __init__(self, cleaned_data, rb_def_stats):
         self.cleaned_data = cleaned_data[cleaned_data["position"] == "RB"].copy()
         self.rb_def_stats = rb_def_stats.copy()
-        self.calculated_stats = qb_calculated_stats
+        self.calculated_stats = rb_calculated_stats
 
     def add_calculated_stats(self):
         df = self.cleaned_data.copy()
         df = df.sort_values(["gsis_id", "week"])
 
         zero_fill_cols = [
-            "pass_attempt",
+            "touches",
             "pass_air_yards",
             "pass_yards_gained",
             "pass_touchdown",

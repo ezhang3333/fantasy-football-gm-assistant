@@ -1,6 +1,6 @@
 import pandas as pd
 import nflreadpy as nfl_rp
-from data_extractors.pfr_web_scraper import PFRWebScraper
+from data_extractors.nfl_stats_web_scraper import NFLWebScraper
 
 class NFLReadExtractor:
     def __init__(self, current_season):

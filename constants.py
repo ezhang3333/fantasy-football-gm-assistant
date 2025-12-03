@@ -74,3 +74,105 @@ qb_calculated_stats = [
     "draft_number",
     "is_undrafted",
 ]
+
+rb_calculated_stats = [
+    # volume
+    "touches",
+    "snap_share",
+    "rush_share",
+    "target_share",
+    "weighted_opp_share",
+    "delta_touches",
+
+    # trends
+    "touches_3wk_avg",
+    "touches_trend_3v7",
+    "snap_share_3wk_avg",
+    "snap_share_trend_3v7",
+    "fp_ppr_3wk_avg",
+    "fp_ppr_trend_3v7",
+
+    # rushing efficiency
+    "rush_ypc",
+    "rush_td_rate",
+    "rush_yards_over_expected_per_att",
+    "rush_yoe_per_game",
+    "stacked_box_rate",
+    "rush_efficiency",
+
+    # receiving
+    "catch_rate",
+    "rec_yards_per_target",
+    "rec_td_rate",
+    "avg_yac_above_expectation",
+
+    # environment
+    "team_implied_points",
+    "is_favored",
+    "abs_spread",
+    "def_rush_ypa_allowed",
+    "def_rb_carries_allowed",
+    "def_rb_receptions_allowed",
+    "def_rb_touchdowns_allowed",
+    "def_rb_fantasy_points_allowed",
+
+    # profile
+    "years_exp_filled",
+    "is_rookie",
+    "is_undrafted",
+    "draft_number_filled",
+]
+
+wr_te_feature_cols = [
+    # volume
+    "targets",
+    "air_yards",
+    "snap_share",
+    "target_share",
+    "air_yards_share",
+    "weighted_opp_share",
+    "delta_targets",
+
+    # trends
+    "targets_3wk_avg",
+    "targets_7wk_avg",
+    "targets_trend_3v7",
+
+    "air_yards_3wk_avg",
+    "air_yards_7wk_avg",
+    "air_yards_trend_3v7",
+
+    "snap_share_3wk_avg",
+    "snap_share_trend_3v7",
+
+    "fp_ppr_3wk_avg",
+    "fp_ppr_7wk_avg",
+    "fp_ppr_trend_3v7",
+
+    # efficiency
+    "yards_per_target",
+    "rec_td_rate",
+    "catch_rate",
+    "fp_per_target",
+
+    "avg_intended_air_yards",
+    "percent_share_of_intended_air_yards",
+    "avg_separation",
+    "avg_cushion",
+    "avg_yac_above_expectation",
+    "racr",
+
+    # environment
+    "team_implied_points",
+    "is_favored",
+    "abs_spread",
+    "pass_defense_rank",
+    "pressure_rate_def",
+
+    # profile
+    "years_exp_filled",
+    "is_rookie",
+    "is_second_year",
+    "is_undrafted",
+    "draft_number_filled",
+]

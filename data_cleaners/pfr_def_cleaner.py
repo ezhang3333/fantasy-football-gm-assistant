@@ -69,3 +69,5 @@ class PFRDefCleaner:
 
         return qb_def
 
+    def calculate_rb_def_stats(self):
+        return None
