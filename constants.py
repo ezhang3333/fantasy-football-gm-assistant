@@ -80,7 +80,6 @@ rb_calculated_stats = [
     "touches",
     "snap_share",
     "rush_share",
-    "target_share",
     "weighted_opp_share",
     "delta_touches",
 
@@ -94,7 +93,6 @@ rb_calculated_stats = [
 
     # rushing efficiency
     "rush_ypc",
-    "rush_td_rate",
     "rush_yards_over_expected_per_att",
     "rush_yoe_per_game",
     "stacked_box_rate",
@@ -103,7 +101,6 @@ rb_calculated_stats = [
     # receiving
     "catch_rate",
     "rec_yards_per_target",
-    "rec_td_rate",
     "avg_yac_above_expectation",
 
     # environment

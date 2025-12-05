@@ -8,6 +8,7 @@ import pandas as pd
 from data_cleaners.positions.qb_cleaner import QBCleaner
 from finalized_datasets.qb_finalized_dataset import QBFinalizedDataset
 from data_cleaners.cbs_def_cleaner import CBSDefCleaner
+from data_cleaners.positions.rb_cleaner import RBCleaner
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
@@ -15,17 +16,17 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_colwidth', None)
 
 
-# extractor = NFLReadExtractor(2025)
-# raw_data = extractor.get_all_data()
+extractor = NFLReadExtractor(2025)
+raw_data = extractor.get_all_data()
 
-# # if you need to reupdate the data in data extractors
-# # roster_weekly = extractor.load_snap_counts()
-# # roster_weekly.to_csv('./data_extractors/data/snap_counts.csv', index=False)
+# if you need to reupdate the data in data extractors
+# roster_weekly = extractor.load_snap_counts()
+# roster_weekly.to_csv('./data_extractors/data/snap_counts.csv', index=False)
 
 
 # # for testing the cleaner
-# cleaner = NFLReadCleaner(raw_data)
-# merged = cleaner.merge_data_to_player_weeks()
+cleaner = NFLReadCleaner(raw_data)
+merged = cleaner.merge_data_to_player_weeks()
 # merged.to_csv('./data_cleaners/data/merged_data.csv', index=False)
 
 hi = NFLWebScraper()
@@ -52,3 +53,6 @@ print(cbs_def_vs_rb_final)
 # qb_finalized = QBFinalizedDataset(qb_cleaned_dataset)
 # qb_finalized_dataset = qb_finalized.extract_finalized_dataset()
 # qb_finalized_dataset.to_csv('./finalized_datasets/data/qb_finalized_dataset.csv', index=False)
+
+rb = RBCleaner(merged, cbs_def_vs_rb_final)
+rb.add_calculated_stats()

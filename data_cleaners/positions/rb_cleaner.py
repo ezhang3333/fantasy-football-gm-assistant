@@ -16,11 +16,11 @@ class RBCleaner:
         df["touches"] = df["rec_attempt"] + df["rush_attempt"]
         df["snap_share"] = df["offense_pct"]
         df["rush_share"] = df["rush_attempt"] / df["rush_attempt_team"]
-        # do you want to keep this weighting
         df["weighted_opp_share"] = df["rush_attempt"] + 3 * df["rec_attempt"]
-        
-        # trends all require sorting by name and gsis id
-        # "touches_3wk_avg"
+
+        df_sorted = df.sort_values(["gsis_id", "week"])
+
+        df["touches_3wk_avg"] = df_sorted["touches"].rolling(window=3, min_periods=1).mean()
         # "touches_trend_3v7"
         # "snap_share_3wk_avg"
         # "snap_share_trend_3v7"
@@ -29,6 +29,5 @@ class RBCleaner:
 
         # rushing efficiency
         df["rush_ypc"] = df["rush_yards_gained"] / df["rush_attempt"]
-        df["rush_td_rate"] = df[""]
 
         # ADD SOME SORT OF TOUCHDOWN FEATURE TRACKING IN RB_CALCULATED_STATS in constants.py
