@@ -5,8 +5,8 @@ import numpy as np
 class PFRDefCleaner:
     def __init__(self, team_def_stats, adv_def_stats):
         self.year = get_current_season()
-        self.team_def_stats = team_def_stats
-        self.adv_def_stats = adv_def_stats
+        self.team_def_stats = team_def_stats.copy()
+        self.adv_def_stats = adv_def_stats.copy()
 
         self.calculate_stats = {
             'team_def_stats' : [

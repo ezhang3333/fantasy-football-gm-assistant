@@ -1,7 +1,9 @@
 Goals In Priority:
-1. Read constants.py and create the rb_cleaner and wr_and_te_cleaner
-2. Make rb and wr/te finalized datasets
-3. Game script feature creator for each position seperately
-3. Double check datasets to make sure the calculated stats are correct (probably return the datasets by sorting and groupby)
-4. Create gradient boosted tree model
-5. Think about adding a game script feature for all positions
+NEW PRIORITY: TEST TO SEE IF RB_CLEANER dataset returned is totally good
+1. Create finalized rb dataset from rb_cleaner return dataset 
+2. Create wr_and_te_cleaner 
+3. Really look at all the finalized datasets and make sure everything is correct and filled properly
+4. Game script feature creator for each position seperately
+5. Double check datasets to make sure the calculated stats are correct (probably return the datasets by sorting and groupby)
+6. Create gradient boosted tree model
+7. Think about adding a game script feature for all positions

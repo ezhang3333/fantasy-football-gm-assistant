@@ -163,7 +163,7 @@ class QBCleaner:
         df["is_second_year"] = (df["years_exp"] == 1).astype(int)
 
         df["is_undrafted"] = df["draft_number"].isna().astype(int)
-        df["draft_number"] = df["draft_number"].fillna(300).astype(float)
+        df["draft_number"] = df["draft_number"].fillna(275).astype(float)
 
         df["years_exp"] = df["years_exp"].fillna(0).astype(float)
 

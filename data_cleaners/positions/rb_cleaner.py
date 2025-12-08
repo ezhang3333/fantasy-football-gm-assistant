@@ -11,6 +11,31 @@ class RBCleaner:
 
     def add_calculated_stats(self):
         df = self.cleaned_data.copy()
+
+        zero_fill_cols = [
+            "rec_attempt",
+            "rush_attempt",
+            "offense_pct",
+            "rush_touchdown",
+            "rec_touchdown",
+            "rush_yards_gained",
+            "rec_yards_gained",
+            "pass_yards_gained",
+            "pass_touchdown",
+            "receptions",
+            "rec_fumble_lost",
+            "rush_fumble_lost",
+            "rush_yards_over_expected_per_att",
+            "percent_attempts_gte_eight_defenders",
+            "avg_yac_above_expectation"
+        ]
+
+        for col in zero_fill_cols:
+            if col in df:
+                df[col] = df[col].fillna(0)
+
+        more_than_zero_rushes = df["rush_attempt"] > 0
+        df["more_than_zero_rushes"] = more_than_zero_rushes.astype("int8")
         
         # volume
         df["touches"] = df["rec_attempt"] + df["rush_attempt"]
@@ -34,6 +59,8 @@ class RBCleaner:
         df_sorted = df.sort_values(["gsis_id", "week"]) 
         grouped_player_df = df_sorted.groupby("gsis_id")
 
+        df["delta_touches"] = grouped_player_df["touches"].diff(periods=1)
+
         # trends
         df["touches_3wk_avg"] = grouped_player_df["touches"].rolling(window=3, min_periods=1).mean()
         df["touches_7wk_avg"] = grouped_player_df["touches"].rolling(window=7, min_periods=1).mean()
@@ -54,6 +81,7 @@ class RBCleaner:
         # rushing efficiency
         df["rush_ypc"] = df["rush_yards_gained"] / df["rush_attempt"]
         df["rush_yoe_per_game"] = df["rush_yards_over_expected_per_att"] * df["rush_attempt"]
+        df["rush_yoe_per_att"] = df["rush_yards_over_expected_per_att"]
         df["stacked_box_rate"] = df["percent_attempts_gte_eight_defenders"]
 
         # receiving
@@ -79,10 +107,7 @@ class RBCleaner:
         df = df.merge(def_rb_stats, left_on="team_away", right_index=True, how="left")
 
         # profile
-        df["years_exp_filled"] = df["years_exp"].fillna()
+        df["years_exp_filled"] = df["years_exp"].fillna(0)
         df["is_rookie"] = (df["years_exp"] == 0).astype(int)
-        df["draft_number_filled"] = df["draft_number"].fillna(261)
-        df["is_undrafted"] = (df["draft_number_filled"] == 261).astype(int)
-
-
-        # ADD SOME SORT OF TOUCHDOWN FEATURE TRACKING IN RB_CALCULATED_STATS in constants.py
+        df["draft_number_filled"] = df["draft_number"].fillna(275)
+        df["is_undrafted"] = (df["draft_number_filled"] == 275).astype(int)

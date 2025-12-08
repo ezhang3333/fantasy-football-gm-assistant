@@ -8,7 +8,7 @@ TEAM_NICK_TO_ABBR = {
 
 class CBSDefCleaner:
     def __init__(self, cbs_def_vs_rb_stats):
-        self.cbs_def_vs_rb_stats = cbs_def_vs_rb_stats
+        self.cbs_def_vs_rb_stats = cbs_def_vs_rb_stats.copy()
         self.calculated_stats = {
             'cbs_def_vs_rb_stats' : [
                 "def_rush_ypa_allowed", 

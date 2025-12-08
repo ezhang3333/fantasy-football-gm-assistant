@@ -1,10 +1,12 @@
 import pandas as pd
 import nflreadpy as nfl_rp
 from data_extractors.nfl_stats_web_scraper import NFLWebScraper
+from services.espn_api import get_current_season
+
 
 class NFLReadExtractor:
-    def __init__(self, current_season):
-        self.current_season = current_season
+    def __init__(self):
+        self.current_season = get_current_season()
         self.default_positions = ['QB', 'RB', 'WR', 'TE']
 
         self.keep = {
