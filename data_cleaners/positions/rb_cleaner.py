@@ -51,14 +51,18 @@ class RBCleaner:
             4.0 * df["pass_touchdown"] + 
             1.0 * df["receptions"] -
             2.0 * df["rec_fumble_lost"] - 
-            2.0 * df["rush_fumble_lost"]
+            2.0 * df["rush_fumble_lost"] + 
+            # bonuses
+            3.0 * (df["rush_yards_gained"] >= 100) + 
+            3.0 * (df["rush_yards_gained"] >= 200) +
+            3.0 * (df["rec_yards_gained"] >= 100) + 
+            3.0 * (df["rec_yards_gained"] >= 200) 
         )
 
         df_sorted = df.sort_values(["gsis_id", "week"]) 
         grouped_player_df = df_sorted.groupby("gsis_id")
 
         df["delta_touches"] = grouped_player_df["touches"].diff(periods=1)
-        df["delta_touches"] = df["delta_touches"].fillna(0)
 
         # trends
         df["touches_3wk_avg"] = grouped_player_df["touches"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)

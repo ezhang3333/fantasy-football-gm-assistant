@@ -125,39 +125,39 @@ rb_calculated_stats = [
     "draft_number_filled",
     ]
 
-wr_te_feature_cols = [
-    # volume
+wr_and_te_calculated_stats = [
+    # receiving volume
     "targets",
     "air_yards",
     "snap_share",
     "target_share",
     "air_yards_share",
-    "weighted_opp_share",
+    "total_touchdowns",
     "delta_targets",
+
+    # rushing volume
+    "rush_attempts",
+    "rush_ypa",
+    "rush_share",
 
     # trends
     "targets_3wk_avg",
-    "targets_7wk_avg",
     "targets_trend_3v7",
-
     "air_yards_3wk_avg",
-    "air_yards_7wk_avg",
     "air_yards_trend_3v7",
-
     "snap_share_3wk_avg",
     "snap_share_trend_3v7",
-
     "fp_ppr_3wk_avg",
-    "fp_ppr_7wk_avg",
     "fp_ppr_trend_3v7",
+    "tds_3wk_avg",
+    "tds_trend_3v7"
+    "gadget_usage_3wk_avg"
 
     # efficiency
     "yards_per_target",
     "rec_td_rate",
     "catch_rate",
     "fp_per_target",
-
-    "avg_intended_air_yards",
     "percent_share_of_intended_air_yards",
     "avg_separation",
     "avg_cushion",
@@ -168,9 +168,10 @@ wr_te_feature_cols = [
     "team_implied_points",
     "is_favored",
     "abs_spread",
-    "pass_defense_rank",
-    "pressure_rate_def",
 
+    # defense
+    # NEED TO DO THIS
+    
     # profile
     "years_exp_filled",
     "is_rookie",

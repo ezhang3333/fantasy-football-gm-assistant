@@ -47,12 +47,17 @@ class QBCleaner:
             0.04 * df["pass_yards_gained"]
             + 0.10 * df["rush_yards_gained"]
             + 0.10 * df["rec_yards_gained"]
-            + 4.0  * df["pass_touchdown"]
-            + 6.0  * df["rush_touchdown"]
-            + 6.0  * df["rec_touchdown"]
-            - 1.0  * df["pass_interception"]
-            - 2.0  * df["rush_fumble_lost"]
-            - 2.0  * df["rec_fumble_lost"]
+            + 4.0 * df["pass_touchdown"]
+            + 6.0 * df["rush_touchdown"]
+            + 6.0 * df["rec_touchdown"]
+            - 1.0 * df["pass_interception"]
+            - 2.0 * df["rush_fumble_lost"]
+            - 2.0 * df["rec_fumble_lost"]
+            # bonuses
+            + 3.0 * (df["rush_yards_gained"] >= 100)
+            + 3.0 * (df["rush_yards_gained"] >= 200)
+            + 3.0 * (df["pass_yards_gained"] >= 300)
+            + 3.0 * (df["pass_yards_gained"] >= 400)
         )
 
         df["fantasy_per_att"] = df["fantasy_points"] / att_safe
