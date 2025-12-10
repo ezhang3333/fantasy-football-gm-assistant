@@ -33,13 +33,11 @@ class RBCleaner:
         for col in zero_fill_cols:
             if col in df:
                 df[col] = df[col].fillna(0)
-
-        more_than_zero_rushes = df["rush_attempt"] > 0
-        df["more_than_zero_rushes"] = more_than_zero_rushes.astype("int8")
         
         # volume
         df["touches"] = df["rec_attempt"] + df["rush_attempt"]
         df["snap_share"] = df["offense_pct"]
+        df["target_share"] = df["rec_attempt"] / df["rec_attempt_team"]
         df["rush_share"] = df["rush_attempt"] / df["rush_attempt_team"]
         df["weighted_opp_share"] = df["rush_attempt"] + 3 * df["rec_attempt"]
         df["total_touchdowns"] = df["rush_touchdown"] + df["rec_touchdown"]
@@ -60,22 +58,23 @@ class RBCleaner:
         grouped_player_df = df_sorted.groupby("gsis_id")
 
         df["delta_touches"] = grouped_player_df["touches"].diff(periods=1)
+        df["delta_touches"] = df["delta_touches"].fillna(0)
 
         # trends
-        df["touches_3wk_avg"] = grouped_player_df["touches"].rolling(window=3, min_periods=1).mean()
-        df["touches_7wk_avg"] = grouped_player_df["touches"].rolling(window=7, min_periods=1).mean()
+        df["touches_3wk_avg"] = grouped_player_df["touches"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
+        df["touches_7wk_avg"] = grouped_player_df["touches"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
         df["touches_trend_3v7"] = df["touches_3wk_avg"] - df["touches_7wk_avg"]
 
-        df["snap_share_3wk_avg"] = grouped_player_df["snap_share"].rolling(window=3, min_periods=1).mean()
-        df["snap_share_7wk_avg"] = grouped_player_df["snap_share"].rolling(window=7, min_periods=1).mean()
+        df["snap_share_3wk_avg"] = grouped_player_df["snap_share"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
+        df["snap_share_7wk_avg"] = grouped_player_df["snap_share"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
         df["snap_share_trend_3v7"] = df["snap_share_3wk_avg"] - df["snap_share_7wk_avg"]
 
-        df["fantasy_ppr_3wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=3, min_periods=1).mean()
-        df["fantasy_ppr_7wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=7, min_periods=1).mean()
+        df["fantasy_ppr_3wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
+        df["fantasy_ppr_7wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
         df["fantasy_ppr_trend_3v7"] = df["fantasy_ppr_3wk_avg"] - df["fantasy_ppr_7wk_avg"]
 
-        df["tds_3wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=3, min_periods=1).mean()
-        df["tds_7wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=7, min_periods=1).mean()
+        df["tds_3wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
+        df["tds_7wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
         df["tds_trend_3v7"] = df["tds_3wk_avg"] - df["tds_7wk_avg"]
 
         # rushing efficiency
@@ -111,3 +110,18 @@ class RBCleaner:
         df["is_rookie"] = (df["years_exp"] == 0).astype(int)
         df["draft_number_filled"] = df["draft_number"].fillna(275)
         df["is_undrafted"] = (df["draft_number_filled"] == 275).astype(int)
+
+        post_division_zero_fill_cols = [
+            "rush_ypc",
+            "catch_rate",
+            "rec_yards_per_target",
+            "delta_touches",
+            "rush_share",
+            "target_share"
+        ]
+
+        for col in post_division_zero_fill_cols:
+            if col in df:
+                df[col] = df[col].fillna(0)
+
+        return df

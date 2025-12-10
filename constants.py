@@ -80,6 +80,7 @@ rb_calculated_stats = [
     "touches",
     "snap_share",
     "rush_share",
+    "target_share",
     "weighted_opp_share",
     "total_touchdowns",
     "delta_touches",
@@ -92,11 +93,11 @@ rb_calculated_stats = [
     "fantasy_ppr_3wk_avg",
     "fantasy_ppr_trend_3v7",
     "tds_3wk_avg",
-    "tds_trend_3v7"
+    "tds_trend_3v7",
 
     # rushing efficiency
     "rush_ypc",
-    "rush_yards_over_expected_per_att",
+    "rush_yoe_per_att",
     "rush_yoe_per_game",
     "stacked_box_rate",
 

@@ -1,9 +1,8 @@
 Goals In Priority:
-NEW PRIORITY: TEST TO SEE IF RB_CLEANER dataset returned is totally good
-1. Create finalized rb dataset from rb_cleaner return dataset 
-2. Create wr_and_te_cleaner 
-3. Really look at all the finalized datasets and make sure everything is correct and filled properly
+
+1. Create wr_and_te_cleaner 
+2: automate datapipeline, possible into a single nfl pipeline class
+
 4. Game script feature creator for each position seperately
-5. Double check datasets to make sure the calculated stats are correct (probably return the datasets by sorting and groupby)
 6. Create gradient boosted tree model
 7. Think about adding a game script feature for all positions

@@ -1,15 +1,14 @@
 import pandas as pd
-import requests
 from constants import qb_calculated_stats
 from services.espn_api import get_current_week
 
-class QBFinalizedDataset:
+class QBFinalizer:
     def __init__(self, qb_cleaned_dataset):
         self.qb_cleaned_dataset = qb_cleaned_dataset
         self.current_week = get_current_week()
 
     def extract_finalized_dataset(self):
-        identifiers = ["team", "position", "full_name", "gsis_id"]
+        identifiers = ["team", "position", "full_name", "gsis_id", "week"]
         cleaned = self.qb_cleaned_dataset
         curr_week = self.current_week
         all_columns_to_extract = identifiers + qb_calculated_stats
