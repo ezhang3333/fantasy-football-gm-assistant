@@ -1,4 +1,3 @@
-import pandas as pd
 from constants import rb_calculated_stats
 from services.espn_api import get_current_week
 

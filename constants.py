@@ -147,11 +147,11 @@ wr_calculated_stats = [
     "air_yards_trend_3v7",
     "snap_share_3wk_avg",
     "snap_share_trend_3v7",
-    "fp_ppr_3wk_avg",
-    "fp_ppr_trend_3v7",
+    "fantasy_ppr_3wk_avg",
+    "fantasy_ppr_trend_3v7",
     "tds_3wk_avg",
-    "tds_trend_3v7"
-    "gadget_usage_3wk_avg"
+    "tds_trend_3v7",
+    "gadget_usage_3wk_avg",
 
     # efficiency
     "yards_per_target",
@@ -207,8 +207,8 @@ te_calculated_stats = [
     "fp_ppr_3wk_avg",
     "fp_ppr_trend_3v7",
     "tds_3wk_avg",
-    "tds_trend_3v7"
-    "gadget_usage_3wk_avg"
+    "tds_trend_3v7",
+    "gadget_usage_3wk_avg",
 
     # efficiency
     "yards_per_target",

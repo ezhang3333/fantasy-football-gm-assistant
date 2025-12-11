@@ -58,7 +58,7 @@ class NFLWebScraper:
         cbs_def_vs_stats_url = f"https://www.cbssports.com/fantasy/football/stats/posvsdef/{position}/ALL/avg/standard"
         renamed_columns = ['Rank', 'Team', 'Rush Att', 'Rush Yds', 'Rush YPA', 'Rush TD', 'Targt', 'Recpt', 'Rec Yds', 'YPC', 'Rec TD', 'FL', 'FPTS']
 
-        response = requests.get(cbs_def_vs_stats_url, timeout=15)
+        response = requests.get(cbs_def_vs_stats_url, timeout=25)
         soup = BeautifulSoup(response.text, 'lxml')
 
         table = soup.select("table.data.compact")

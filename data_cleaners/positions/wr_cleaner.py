@@ -80,7 +80,7 @@ class WRCleaner:
 
         df["air_yards_3wk_avg"] = grouped_player_df["rec_air_yards"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
         df["air_yards_7wk_avg"] = grouped_player_df["rec_air_yards"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
-        df["air_yards_3v7"] = df["air_yards_3wk_avg"] - df["air_yards_7wk_avg"]
+        df["air_yards_trend_3v7"] = df["air_yards_3wk_avg"] - df["air_yards_7wk_avg"]
         
 
         df["snap_share_3wk_avg"] = grouped_player_df["snap_share"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
