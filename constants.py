@@ -60,8 +60,11 @@ qb_calculated_stats = [
     "rush_trend_3v7",
 
     "team_implied_points",
-    "pass_defense_rank",
-    "pressure_rate_def",
+    "def_pass_ypa_allowed",
+    "def_total_tds_allowed",
+    "def_pass_int_rate_forced",
+    "def_sack_rate",
+    "def_fantpt_allowed",
 
     "fantasy_points",
     "fantasy_3wk_avg",
@@ -123,7 +126,7 @@ rb_calculated_stats = [
     "is_rookie",
     "is_undrafted",
     "draft_number_filled",
-    ]
+]
 
 wr_calculated_stats = [
     # receiving volume
