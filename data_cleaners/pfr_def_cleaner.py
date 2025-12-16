@@ -1,9 +1,9 @@
 from services.espn_api import get_current_season
+from constants import TEAM_NAME_TO_ABBR
 import pandas as pd
-import numpy as np
 
 class PFRDefCleaner:
-    def __init__(self, team_def_stats, adv_def_stats):
+    def __init__(self, team_def_stats=pd.DataFrame(), adv_def_stats=pd.DataFrame()):
         self.year = get_current_season()
         self.team_def_stats = team_def_stats.copy()
         self.adv_def_stats = adv_def_stats.copy()
@@ -16,6 +16,37 @@ class PFRDefCleaner:
                 'Tm', 'G', 'Att', 'Yds', 'TD', 'Prss%'
             ]
         }
+    
+    def calculate_def_vs_rb(self, def_vs_rb):
+        def_vs_rb = def_vs_rb.copy()
+
+        def_vs_rb["def_rush_ypa_allowed"] = def_vs_rb["rush_yds"] / def_vs_rb["rush_att"]
+        def_vs_rb["def_rb_carries_allowed"] = def_vs_rb["rush_att"] / def_vs_rb["games"]
+        def_vs_rb["def_rb_receptions_allowed"] = def_vs_rb["rec_recept"] / def_vs_rb["games"]
+        def_vs_rb["def_rb_touchdowns_allowed"] = (def_vs_rb["rush_tds"] + def_vs_rb["rec_tds"]) / def_vs_rb["games"]
+        def_vs_rb["def_rb_fantasy_points_allowed"] = def_vs_rb["fantpt_per_game"]
+        def_vs_rb["team_abbrev"] = def_vs_rb["team"].map(TEAM_NAME_TO_ABBR)
+
+        rb_def = def_vs_rb[[
+            "team_abbrev",
+            "def_rush_ypa_allowed",
+            "def_rb_carries_allowed",
+            "def_rb_receptions_allowed",
+            "def_rb_touchdowns_allowed",
+            "def_rb_fantasy_points_allowed",            
+        ]].copy()
+
+        return rb_def
+
+
+    def calculate_def_vs_te(self, def_vs_te):
+        return None
+    
+    def calculate_def_vs_qb(self, def_vs_qb):
+        return None
+    
+    def calculate_def_vs_wr(self, def_vs_wr):
+        return None
     
     def calculate_qb_def_stats(self):
         team = self.team_def_stats[self.calculate_stats["team_def_stats"]].copy()
@@ -68,6 +99,3 @@ class PFRDefCleaner:
         ]].copy()
 
         return qb_def
-
-    def calculate_rb_def_stats(self):
-        return None

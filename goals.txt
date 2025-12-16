@@ -1,6 +1,6 @@
 Goals In Priority:
 
-1. Create wr_and_te_cleaner 
+1. Gather more data by expanding seasons for nfl_pr and the defense stats
 2: automate datapipeline, possible into a single nfl pipeline class
 
 4. Game script feature creator for each position seperately
