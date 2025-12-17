@@ -120,7 +120,7 @@ class TECleaner:
         df["abs_spread"] = np.abs(team_spread)
 
         # opposing defense
-        def_te_stats = self.te_def_stats.set_index("team")
+        def_te_stats = self.te_def_stats.set_index("team_abbrev")
         df = df.merge(def_te_stats, left_on="team_away", right_index=True, how="left")
 
         # profile

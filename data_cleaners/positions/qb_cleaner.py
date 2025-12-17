@@ -152,19 +152,8 @@ class QBCleaner:
             away_implied,
         )
 
-        qb_def = self.qb_def_stats.rename(columns={"Tm": "opponent"}).copy()
-        qb_def["opponent"] = qb_def["opponent"].map(TEAM_NAME_TO_ABBR)
-
-        pressure_rate_median = qb_def["pressure_rate_def"].median()
-
-        df = df.merge(
-            qb_def[["opponent", "pass_defense_rank", "pressure_rate_def"]],
-            how="left",
-            on="opponent",
-        )
-
-        df["pass_defense_rank"] = df["pass_defense_rank"].fillna(16.5)
-        df["pressure_rate_def"] = df["pressure_rate_def"].fillna(pressure_rate_median)
+        def_qb_stats = self.qb_def_stats.set_index("team_abbrev")
+        df = df.merge(def_qb_stats, left_on="team_away", right_index=True, how="left")
 
         df["is_rookie"] = (df["years_exp"] == 0).astype(int)
         df["is_second_year"] = (df["years_exp"] == 1).astype(int)

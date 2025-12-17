@@ -27,32 +27,6 @@ adv_def_stats : [
 class NFLWebScraper:
     def __init__(self):
         self.year = get_current_season()
-
-    def pfr_scrape_team_def_stats(self):
-        pfr_team_def_url = f'https://www.pro-football-reference.com/years/{self.year}/opp.htm#all_team_stats'
-
-        options = Options()
-        options.add_argument("--headless=new")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--window-size=1920,1080")
-
-        driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
-            options=options
-        )
-
-        driver.get(pfr_team_def_url)
-        time.sleep(5)
-
-        html = driver.page_source
-        driver.quit()
-
-        team_def_stats_uncleaned = self.extract_pfr_table(html, "all_team_stats")
-        team_def_stats = self.pfr_clean_team_def_stats(team_def_stats_uncleaned)
-        adv_def_stats = self.extract_pfr_table(html, "all_advanced_defense")
-
-        return team_def_stats, adv_def_stats
     
     def pfr_scrape_def_vs_stats(self, year, position):
         capitalized_position = position.upper()
@@ -113,26 +87,6 @@ class NFLWebScraper:
 
         dfs = pd.read_html(str(table))
         return dfs[0]
-    
-    def pfr_clean_team_def_stats(self, team_def):
-        team_def = team_def.copy()
-
-        team_def.columns = team_def.columns.get_level_values(1)
-        team_def = team_def[team_def["Rk"] != "Rk"]
-
-        mask_mid_header = team_def["Rk"].isna() & team_def["Tm"].isna()
-        team_def = team_def[~mask_mid_header]
-
-        summary_labels = {"Avg Team", "League Total", "Avg Tm/G"}
-        team_def = team_def[~team_def["Tm"].isin(summary_labels)]
-
-        for i, col in enumerate(team_def.columns):
-            if col == "Tm":
-                continue
-            team_def.iloc[:, i] = pd.to_numeric(team_def.iloc[:, i], errors="coerce")
-
-        team_def = team_def.reset_index(drop=True)
-        return team_def
     
     def pfr_clean_def_vs_stats(self, def_vs):
         def_vs = def_vs.copy()

@@ -13,12 +13,6 @@ from data_finalizers.wr_finalizer import WRFinalizer
 from data_cleaners.positions.te_cleaner import TECleaner
 from data_finalizers.te_finalizer import TEFinalizer
 
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', None)
-pd.set_option('display.max_colwidth', None)
-
-
 extractor = NFLReadExtractor()
 raw_data = extractor.get_all_data()
 

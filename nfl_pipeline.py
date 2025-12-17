@@ -11,14 +11,32 @@ from data_cleaners.positions.wr_cleaner import WRCleaner
 from data_finalizers.wr_finalizer import WRFinalizer
 from data_cleaners.positions.te_cleaner import TECleaner
 from data_finalizers.te_finalizer import TEFinalizer
+import pandas as pd
 
 class NFLDataPipeline:
-    def __init__(self, years_of_data):
-        self.years_of_data = years_of_data
+    def __init__(self, seasons):
+        self.seasons = seasons
 
-    def extract_raw_data():
-        return None
+        self.extractor = NFLReadExtractor(self.seasons)
+        self.scraper = NFLWebScraper()
+
+        self.qb_cleaner = QBCleaner()
+        self.rb_cleaner = RBCleaner()
+        self.wr_cleaner = WRCleaner()
+        self.te_cleaner = TECleaner()
+        self.pfr_cleaner = PFRDefCleaner()
+
+        self.qb_finalizer = QBFinalizer()
+        self.rb_finalizer = RBFinalizer()
+        self.wr_finalizer = WRFinalizer()
+        self.te_finalizer = TEFinalizer()
+
+
+    def extract_raw_data(self):
+        return self.extractor.get_all_data()
     
-    def clean_raw_data():
-        return None
+    def clean_raw_data(self):
+        def_vs_qb = self.scraper.pfr_clean_def_vs_stats()
     
+    def finalize_datasets(self):
+        return None

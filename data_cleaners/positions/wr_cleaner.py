@@ -121,7 +121,7 @@ class WRCleaner:
         df["abs_spread"] = np.abs(team_spread)
 
         # opposing defense
-        def_wr_stats = self.wr_def_stats.set_index("team")
+        def_wr_stats = self.wr_def_stats.set_index("team_abbrev")
         df = df.merge(def_wr_stats, left_on="team_away", right_index=True, how="left")
 
         # profile

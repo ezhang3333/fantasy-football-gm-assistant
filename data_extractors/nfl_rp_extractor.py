@@ -5,8 +5,8 @@ from services.espn_api import get_current_season
 
 
 class NFLReadExtractor:
-    def __init__(self):
-        self.current_season = get_current_season()
+    def __init__(self, seasons):
+        self.seasons = seasons
         self.default_positions = ['QB', 'RB', 'WR', 'TE']
 
         self.keep = {
@@ -156,59 +156,54 @@ class NFLReadExtractor:
         
 
     def load_player_stats(self):
-        player_stats = nfl_rp.load_player_stats(self.current_season, 'reg').to_pandas()
+        player_stats = nfl_rp.load_player_stats(self.seasons, 'reg').to_pandas()
         player_stats = player_stats.reindex(columns=self.keep["player_stats"])
         player_stats = player_stats[player_stats["position"].isin(self.default_positions)]
         return player_stats
 
     def load_team_stats(self):
-        team_stats = nfl_rp.load_team_stats(self.current_season, 'reg').to_pandas()
+        team_stats = nfl_rp.load_team_stats(self.seasons, 'reg').to_pandas()
         return team_stats.reindex(columns=self.keep["team_stats"])
 
     def load_schedules(self):
-        schedules = nfl_rp.load_schedules(self.current_season).to_pandas()
+        schedules = nfl_rp.load_schedules(self.seasons).to_pandas()
         return schedules.reindex(columns=self.keep["schedules"])
 
-    # load_rosters is a better version of load_players
     def load_players(self):
         players = nfl_rp.load_players().to_pandas()
         players = players[
             (players['position'].isin(self.default_positions)) &
-            (players['last_season'] == self.current_season) & 
+            (players['last_season'].isin(self.seasons)) & 
             (players['status'] == 'ACT')]
         return players.reindex(columns=self.keep["players"])
 
     def load_rosters(self):
-        rosters = nfl_rp.load_rosters(self.current_season).to_pandas()
+        rosters = nfl_rp.load_rosters(self.seasons).to_pandas()
         return rosters.reindex(columns=self.keep["rosters"])
 
-    # for now dont use this either because its so large data set
     def load_rosters_weekly(self):
-        rosters_weekly = nfl_rp.load_rosters_weekly(self.current_season).to_pandas()
+        rosters_weekly = nfl_rp.load_rosters_weekly(self.seasons).to_pandas()
         rosters_weekly = rosters_weekly[
             (rosters_weekly['position'].isin(self.default_positions)) &
             (rosters_weekly['status'] == 'ACT')]
         return rosters_weekly.reindex(columns=self.keep["rosters_weekly"])
 
-    # probably cross reference this with one of the load_players or load_rosters 
     def load_snap_counts(self):
-        snap_counts = nfl_rp.load_snap_counts(self.current_season).to_pandas()
+        snap_counts = nfl_rp.load_snap_counts(self.seasons).to_pandas()
         snap_counts = snap_counts[snap_counts['position'].isin(self.default_positions)]
         return snap_counts.reindex(columns=self.keep["snap_counts"])
 
-    # this is weekly by the way
     def load_nextgen_stats(self):
         frames = []
         for cat, key in [("passing","nextgen_passing"),
                          ("rushing","nextgen_rushing"),
                          ("receiving","nextgen_receiving")]:
-            d = nfl_rp.load_nextgen_stats(self.current_season, cat).to_pandas()
+            d = nfl_rp.load_nextgen_stats(self.seasons, cat).to_pandas()
             d = d.reindex(columns=self.keep[key])
             d["stat_category"] = cat
             frames.append(d)
         return pd.concat(frames, ignore_index=True)
 
-    # weekly and has a bunch of stats i aint never heard of
     def load_ff_opportunity(self):
-        ff_opportunity = nfl_rp.load_ff_opportunity(self.current_season, "weekly", "latest").to_pandas()
+        ff_opportunity = nfl_rp.load_ff_opportunity(self.seasons, "weekly", "latest").to_pandas()
         return ff_opportunity.reindex(columns=self.keep["ff_opportunity"])
