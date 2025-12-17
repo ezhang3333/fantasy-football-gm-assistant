@@ -4,14 +4,14 @@ from data_cleaners.pfr_def_cleaner import PFRDefCleaner
 from data_extractors.nfl_stats_web_scraper import NFLWebScraper
 import pandas as pd
 from data_cleaners.positions.qb_cleaner import QBCleaner
-from finalized_datasets.qb_finalizer import QBFinalizer
+from data_finalizers.qb_finalizer import QBFinalizer
 from data_cleaners.cbs_def_cleaner import CBSDefCleaner
 from data_cleaners.positions.rb_cleaner import RBCleaner
-from finalized_datasets.rb_finalizer import RBFinalizer
+from data_finalizers.rb_finalizer import RBFinalizer
 from data_cleaners.positions.wr_cleaner import WRCleaner
-from finalized_datasets.wr_finalizer import WRFinalizer
+from data_finalizers.wr_finalizer import WRFinalizer
 from data_cleaners.positions.te_cleaner import TECleaner
-from finalized_datasets.te_finalizer import TEFinalizer
+from data_finalizers.te_finalizer import TEFinalizer
 
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)

@@ -65,6 +65,7 @@ qb_calculated_stats = [
     "def_pass_int_rate_forced",
     "def_sack_rate",
     "def_fantpt_allowed",
+    "def_rush_ypa_allowed",
 
     "fantasy_points",
     "fantasy_3wk_avg",

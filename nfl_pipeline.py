@@ -1,20 +1,24 @@
 from data_extractors.nfl_rp_extractor import NFLReadExtractor
+from data_cleaners.nfl_rp_cleaner import NFLReadCleaner
 from data_extractors.nfl_stats_web_scraper import NFLWebScraper
 from data_cleaners.pfr_def_cleaner import PFRDefCleaner
+from data_cleaners.positions.qb_cleaner import QBCleaner
+from data_finalizers.qb_finalizer import QBFinalizer
+from data_cleaners.cbs_def_cleaner import CBSDefCleaner
+from data_cleaners.positions.rb_cleaner import RBCleaner
+from data_finalizers.rb_finalizer import RBFinalizer
+from data_cleaners.positions.wr_cleaner import WRCleaner
+from data_finalizers.wr_finalizer import WRFinalizer
+from data_cleaners.positions.te_cleaner import TECleaner
+from data_finalizers.te_finalizer import TEFinalizer
 
-web_scraper = NFLWebScraper()
-def_vs_rb = web_scraper.pfr_scrape_def_vs_stats("2025", "RB")
-def_vs_te = web_scraper.pfr_scrape_def_vs_stats("2025", "TE")
-def_vs_qb = web_scraper.pfr_scrape_def_vs_stats("2025", "QB")
-def_vs_wr = web_scraper.pfr_scrape_def_vs_stats("2025", "WR")
+class NFLDataPipeline:
+    def __init__(self, years_of_data):
+        self.years_of_data = years_of_data
 
-pfr_def_cleaner = PFRDefCleaner()
-cleaned_def_vs_rb = pfr_def_cleaner.calculate_def_vs_rb(def_vs_rb)
-cleaned_def_vs_te = pfr_def_cleaner.calculate_def_vs_te(def_vs_te)
-cleaned_def_vs_qb = pfr_def_cleaner.calculate_def_vs_qb(def_vs_qb)
-cleaned_def_vs_wr = pfr_def_cleaner.calculate_def_vs_wr(def_vs_wr)
-
-print(cleaned_def_vs_rb)
-print(cleaned_def_vs_te)
-print(cleaned_def_vs_qb)
-print(cleaned_def_vs_wr)
+    def extract_raw_data():
+        return None
+    
+    def clean_raw_data():
+        return None
+    
