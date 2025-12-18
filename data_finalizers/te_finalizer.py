@@ -7,7 +7,7 @@ class TEFinalizer:
         self.current_week = get_current_week()
 
     def extract_finalized_dataset(self):
-        identifiers = ["team", "position", "full_name", "gsis_id", "week"]
+        identifiers = ["team", "position", "full_name", "gsis_id", "week", "season"]
         cleaned = self.te_cleaned_dataset
         curr_week = self.current_week
         all_columns_to_extract = identifiers + te_calculated_stats

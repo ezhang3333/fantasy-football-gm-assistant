@@ -26,7 +26,12 @@ hi = NFLWebScraper()
 # cbs_def_rb_stats = hi.cbs_scrape_team_def_stats("RB")
 # cbs_def_te_stats = hi.cbs_scrape_team_def_stats("TE")
 pfr_def_vs_dict = hi.pfr_scrape_def_vs_many_stats([2025, 2024, 2023])
+hi.close()
 print(pfr_def_vs_dict["QB"])
+print(pfr_def_vs_dict["RB"])
+print(pfr_def_vs_dict["WR"])
+print(pfr_def_vs_dict["TE"])
+
 
 # cbs = CBSDefCleaner(cbs_def_rb_stats, cbs_def_wr_stats, cbs_def_te_stats)
 # cbs_def_vs_rb_final = cbs.calculate_cbs_def_vs_rb_stats()

@@ -17,7 +17,7 @@ class NFLReadCleaner:
                 'week', 'player', 'position', 'team', 'opponent', 'offense_snaps', 'offense_pct'
             ],
             'nextgen_stats' : [
-                'week', 'avg_time_to_throw', 'avg_intended_air_yards', 'aggressiveness', 'avg_air_yards_to_sticks',
+                'season', 'week', 'avg_time_to_throw', 'avg_intended_air_yards', 'aggressiveness', 'avg_air_yards_to_sticks',
                 'completion_percentage_above_expectation', 'max_air_distance', 'efficiency',
                 'percent_attempts_gte_eight_defenders', 'rush_yards', 'rush_yards_over_expected_per_att', 
                 'avg_cushion', 'avg_separation', 'percent_share_of_intended_air_yards','catch_percentage',

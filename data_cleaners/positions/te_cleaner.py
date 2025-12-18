@@ -120,8 +120,12 @@ class TECleaner:
         df["abs_spread"] = np.abs(team_spread)
 
         # opposing defense
-        def_te_stats = self.te_def_stats.set_index("team_abbrev")
-        df = df.merge(def_te_stats, left_on="team_away", right_index=True, how="left")
+        df = df.merge(
+            self.te_def_stats,
+            left_on=["season", "team_away"],
+            right_on=["season", "team_abbrev"],
+            how="left"
+        ).drop(columns=["team_abbrev"])
 
         # profile
         df["years_exp_filled"] = df["years_exp"].fillna(0)

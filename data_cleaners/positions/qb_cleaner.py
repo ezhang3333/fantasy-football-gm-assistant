@@ -70,52 +70,16 @@ class QBCleaner:
         df["delta_air_yards"] = g["pass_air_yards"].diff().fillna(0)
         df["delta_cpoe"] = g["completion_percentage_above_expectation"].diff().fillna(0)
 
-        df["fantasy_3wk_avg"] = (
-            g["fantasy_points"]
-            .rolling(window=3, min_periods=1)
-            .mean()
-            .reset_index(level=0, drop=True)
-        )
-
-        df["fantasy_7wk_avg"] = (
-            g["fantasy_points"]
-            .rolling(window=7, min_periods=1)
-            .mean()
-            .reset_index(level=0, drop=True)
-        )
-
+        df["fantasy_3wk_avg"] = g["fantasy_points"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
+        df["fantasy_7wk_avg"] = g["fantasy_points"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
         df["fantasy_trend_3v7"] = df["fantasy_3wk_avg"] - df["fantasy_7wk_avg"]
 
-        df["attempts_3wk_avg"] = (
-            g["pass_attempt"]
-            .rolling(window=3, min_periods=1)
-            .mean()
-            .reset_index(level=0, drop=True)
-        )
-
-        df["attempts_7wk_avg"] = (
-            g["pass_attempt"]
-            .rolling(window=7, min_periods=1)
-            .mean()
-            .reset_index(level=0, drop=True)
-        )
-
+        df["attempts_3wk_avg"] = g["pass_attempt"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
+        df["attempts_7wk_avg"] = g["pass_attempt"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
         df["attempts_trend_3v7"] = df["attempts_3wk_avg"] - df["attempts_7wk_avg"]
 
-        df["air_yards_3wk_avg"] = (
-            g["pass_air_yards"]
-            .rolling(window=3, min_periods=1)
-            .mean()
-            .reset_index(level=0, drop=True)
-        )
-
-        df["air_yards_7wk_avg"] = (
-            g["pass_air_yards"]
-            .rolling(window=7, min_periods=1)
-            .mean()
-            .reset_index(level=0, drop=True)
-        )
-
+        df["air_yards_3wk_avg"] = g["pass_air_yards"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
+        df["air_yards_7wk_avg"] = g["pass_air_yards"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
         df["air_yards_trend_3v7"] = df["air_yards_3wk_avg"] - df["air_yards_7wk_avg"]
 
         rush_att = df["rush_attempt"]
@@ -124,20 +88,8 @@ class QBCleaner:
         df["rush_td_rate"] = df["rush_touchdown"] / rush_att_safe
         df["rush_yards_per_game"] = df["rush_yards_gained"]
 
-        df["rush_yards_3wk_avg"] = (
-            g["rush_yards_gained"]
-            .rolling(window=3, min_periods=1)
-            .mean()
-            .reset_index(level=0, drop=True)
-        )
-
-        df["rush_yards_7wk_avg"] = (
-            g["rush_yards_gained"]
-            .rolling(window=7, min_periods=1)
-            .mean()
-            .reset_index(level=0, drop=True)
-        )
-
+        df["rush_yards_3wk_avg"] = g["rush_yards_gained"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
+        df["rush_yards_7wk_avg"] = g["rush_yards_gained"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
         df["rush_trend_3v7"] = df["rush_yards_3wk_avg"] - df["rush_yards_7wk_avg"]
 
         total = df["total"]
@@ -152,8 +104,12 @@ class QBCleaner:
             away_implied,
         )
 
-        def_qb_stats = self.qb_def_stats.set_index("team_abbrev")
-        df = df.merge(def_qb_stats, left_on="team_away", right_index=True, how="left")
+        df = df.merge(
+            self.qb_def_stats,
+            left_on=["season", "team_away"],
+            right_on=["season", "team_abbrev"],
+            how="left"
+        ).drop(columns=["team_abbrev"])
 
         df["is_rookie"] = (df["years_exp"] == 0).astype(int)
         df["is_second_year"] = (df["years_exp"] == 1).astype(int)
