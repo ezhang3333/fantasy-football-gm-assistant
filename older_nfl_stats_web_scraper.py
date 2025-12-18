@@ -3,28 +3,55 @@ import numpy as np
 import requests
 from bs4 import BeautifulSoup
 from bs4 import Comment
-import random
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 from data_cleaners.pfr_def_cleaner import PFRDefCleaner
 from services.espn_api import get_current_season
 import time
 
+"""
+team_def_stats : [
+        'Rk', 'Tm', 'G', 'PA', 'Yds', 'Ply', 'Y/P', 'TO', 'FL', '1stD', 'Cmp',
+       'Att', 'Yds', 'TD', 'Int', 'NY/A', '1stD', 'Att', 'Yds', 'TD', 'Y/A',
+       '1stD', 'Pen', 'Yds', '1stPy', 'Sc%', 'TO%', 'EXP'
+    ]
+
+adv_def_stats : [
+        'Tm', 'G', 'Att', 'Cmp', 'Yds', 'TD', 'DADOT', 'Air', 'YAC', 'Bltz',
+       'Bltz%', 'Hrry', 'Hrry%', 'QBKD', 'QBKD%', 'Sk', 'Prss', 'Prss%',
+       'MTkl'
+    ]
+"""
 class NFLWebScraper:
     def __init__(self):
         self.year = get_current_season()
 
-        self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        })
+        options = Options()
+        options.add_argument("--headless=new")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--window-size=1920,1080")
+
+        self.driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()),
+            options=options
+        )
+
+    def close(self):
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
     
     def pfr_scrape_def_vs_stats(self, year, position):
         capitalized_position = position.upper()
         pfr_team_def_url = f'https://www.pro-football-reference.com/years/{year}/fantasy-points-against-{capitalized_position}.htm'
 
-        response = self.session.get(pfr_team_def_url, timeout=20)
-        if response.status_code != 200:
-            return pd.DataFrame()
-        html = response.text
+        self.driver.get(pfr_team_def_url)
+        time.sleep(5)
+
+        html = self.driver.page_source
 
         def_vs_stats_uncleaned = self.extract_pfr_table(html, "div_fantasy_def", "fantasy_def")
         if def_vs_stats_uncleaned is None:
