@@ -1,10 +1,9 @@
 from data_extractors.nfl_rp_extractor import NFLReadExtractor
 from data_cleaners.nfl_rp_cleaner import NFLReadCleaner
 from data_extractors.nfl_stats_web_scraper import NFLWebScraper
-from data_cleaners.pfr_def_cleaner import PFRDefCleaner
+from data_cleaners.pfr_def_cleaner import PFRCleaner
 from data_cleaners.positions.qb_cleaner import QBCleaner
 from data_finalizers.qb_finalizer import QBFinalizer
-from data_cleaners.cbs_def_cleaner import CBSDefCleaner
 from data_cleaners.positions.rb_cleaner import RBCleaner
 from data_finalizers.rb_finalizer import RBFinalizer
 from data_cleaners.positions.wr_cleaner import WRCleaner
@@ -16,27 +15,63 @@ import pandas as pd
 class NFLDataPipeline:
     def __init__(self, seasons):
         self.seasons = seasons
+        self.POS_REGISTRY = {
+            "QB": ("calculate_def_vs_qb", QBCleaner, QBFinalizer),
+            "RB": ("calculate_def_vs_rb", RBCleaner, RBFinalizer),
+            "WR": ("calculate_def_vs_wr", WRCleaner, WRFinalizer),
+            "TE": ("calculate_def_vs_te", TECleaner, TEFinalizer),
+        }
 
-        self.extractor = NFLReadExtractor(self.seasons)
-        self.scraper = NFLWebScraper()
+    def run_pipeline(
+        self, 
+        positions=("QB", "RB", "WR", "TE"),
+        save_extracted=False, 
+        save_cleaned=False, 
+        save_final=False,
+        out_dir="data"
+    ):
+        positions = [pos.upper() for pos in positions]
 
-        self.qb_cleaner = QBCleaner()
-        self.rb_cleaner = RBCleaner()
-        self.wr_cleaner = WRCleaner()
-        self.te_cleaner = TECleaner()
-        self.pfr_cleaner = PFRDefCleaner()
+        nfl_read_extractor = NFLReadExtractor(self.seasons)
+        raw_data = nfl_read_extractor.get_all_data()
 
-        self.qb_finalizer = QBFinalizer()
-        self.rb_finalizer = RBFinalizer()
-        self.wr_finalizer = WRFinalizer()
-        self.te_finalizer = TEFinalizer()
+        nfl_read_cleaner = NFLReadCleaner(raw_data)
+        merged_data = nfl_read_cleaner.merge_data_to_player_weeks()
 
+        nfl_web_scraper = NFLWebScraper()
+        try:
+            pfr_def_vs_dict = nfl_web_scraper.pfr_scrape_def_vs_many_stats(self.seasons, positions=positions)
+        finally:
+            nfl_web_scraper.close()
 
-    def extract_raw_data(self):
-        return self.extractor.get_all_data()
-    
-    def clean_raw_data(self):
-        def_vs_qb = self.scraper.pfr_clean_def_vs_stats()
-    
-    def finalize_datasets(self):
-        return None
+        pfr_cleaner = PFRCleaner()
+
+        if save_extracted:
+            raw_data.to_csv(f"{out_dir}/extracted/raw_player_data.csv", index=False)
+            merged_data.to_csv(f"{out_dir}/extracted/merged_player_data.csv", index=False)
+
+        datasets_by_pos = {}
+
+        for pos in positions:
+            pfr_cleaner_def_vs_method_name, CleanerClass, FinalizerClass = self.POS_REGISTRY[pos]
+
+            # pasing method by reference
+            pfr_cleaner_def_vs_method = getattr(pfr_cleaner, pfr_cleaner_def_vs_method_name)
+            def_vs_cleaned = pfr_cleaner_def_vs_method(pfr_def_vs_dict[pos])
+
+            pos_cleaner = CleanerClass(merged_data, def_vs_cleaned)
+            cleaned_data = pos_cleaner.add_calculated_stats()
+
+            if save_cleaned:
+                def_vs_cleaned.to_csv(f"{out_dir}/cleaned/pfr_def_vs_{pos.lower()}_cleaned.csv", index=False)
+                cleaned_data.to_csv(f"{out_dir}/cleaned/{pos.lower()}_data.csv", index=False)
+
+            finalizer = FinalizerClass(cleaned_data)
+            final_data = finalizer.extract_finalized_dataset()
+
+            if save_final:
+                final_data.to_csv(f"{out_dir}/final/{pos.lower()}_final_data.csv", index=False)
+
+            datasets_by_pos[pos] = final_data
+
+        return datasets_by_pos

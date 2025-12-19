@@ -6,7 +6,7 @@ from services.espn_api import get_current_season
 
 class NFLReadExtractor:
     def __init__(self, seasons):
-        self.seasons = seasons
+        self.seasons = [int(s) for s in seasons]
         self.default_positions = ['QB', 'RB', 'WR', 'TE']
 
         self.keep = {

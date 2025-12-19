@@ -7,7 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
-from data_cleaners.pfr_def_cleaner import PFRDefCleaner
+from data_cleaners.pfr_def_cleaner import PFRCleaner
 from services.espn_api import get_current_season
 import time
 

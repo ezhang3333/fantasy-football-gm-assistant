@@ -2,8 +2,8 @@ from data_extractors.nfl_rp_extractor import NFLReadExtractor
 import pandas as pd
 
 class NFLReadCleaner:
-    def __init__(self, extracted_data):
-        self.raw_data = extracted_data.copy()
+    def __init__(self, raw_data):
+        self.raw_data = raw_data.copy()
         
         self.keep = {
             'rosters_weekly' : [

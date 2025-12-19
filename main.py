@@ -1,13 +1,12 @@
-import requests
+from nfl_pipeline import NFLDataPipeline
+from constants import SEASONS_TO_EXTRACT
 
-espn_url = 'https://partners.api.espn.com/v2/sports/football/nfl/athletes?limit=7000'
-second_espn_url = 'https://sports.core.api.espn.com/v3/sports/football/nfl/athletes?page=1&limit=20000'
-response = requests.get(espn_url)
-second_response = requests.get(second_espn_url)
+def main():
+    seasons = SEASONS_TO_EXTRACT
 
-print(second_response.json())
-#print(response.status_code)
-#print(response.json())
+    data_pipeline = NFLDataPipeline(seasons)
+    position_final_data_dict = data_pipeline.run_pipeline(save_extracted=True, save_cleaned=True, save_final=True)
 
-# going to have to do web scraping
+if __name__ == "__main__":
+    main()
 

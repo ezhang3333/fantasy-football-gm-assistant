@@ -2,7 +2,7 @@ from services.espn_api import get_current_season
 from constants import TEAM_NAME_TO_ABBR
 import pandas as pd
 
-class PFRDefCleaner:
+class PFRCleaner:
     def __init__(self):
         self.year = get_current_season()
     
@@ -18,6 +18,7 @@ class PFRDefCleaner:
 
         rb_def = def_vs_rb[[
             "team_abbrev",
+            "season",
             "def_rush_ypa_allowed",
             "def_rb_carries_allowed",
             "def_rb_receptions_allowed",
@@ -36,6 +37,7 @@ class PFRDefCleaner:
 
         te_def = def_vs_te[[
             "team_abbrev",
+            "season",
             "def_te_ftps",
             "def_te_targets",
             "def_te_yards_per_target"
@@ -55,6 +57,7 @@ class PFRDefCleaner:
 
         qb_def = def_vs_qb[[
             "team_abbrev",
+            "season",
             "def_pass_ypa_allowed",
             "def_total_tds_allowed",
             "def_pass_int_rate_forced",
@@ -74,6 +77,7 @@ class PFRDefCleaner:
 
         wr_def = def_vs_wr[[
             "team_abbrev",
+            "season",
             "def_wr_ftps",
             "def_wr_targets",
             "def_wr_yards_per_target"
