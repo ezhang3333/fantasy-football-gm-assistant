@@ -47,7 +47,6 @@ class NFLDataPipeline:
         pfr_cleaner = PFRCleaner()
 
         if save_extracted:
-            raw_data.to_csv(f"{out_dir}/extracted/raw_player_data.csv", index=False)
             merged_data.to_csv(f"{out_dir}/extracted/merged_player_data.csv", index=False)
 
         datasets_by_pos = {}

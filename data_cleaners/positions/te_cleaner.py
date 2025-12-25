@@ -69,8 +69,8 @@ class TECleaner:
         df["rush_ypa"] = df["rush_yards_gained"] / df["rush_attempt"]
         df["rush_share"] = df["rush_attempt"] / df["rush_attempt_team"]
 
-        df_sorted = df.sort_values(["gsis_id", "week"]) 
-        grouped_player_df = df_sorted.groupby("gsis_id")
+        df_sorted = df.sort_values(["gsis_id", "week", "season"]) 
+        grouped_player_df = df_sorted.groupby(["gsis_id", "season"])
 
         df["delta_targets"] = grouped_player_df["targets"].diff(periods=1)
 
@@ -91,6 +91,7 @@ class TECleaner:
         df["fantasy_ppr_3wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
         df["fantasy_ppr_7wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
         df["fantasy_ppr_trend_3v7"] = df["fantasy_ppr_3wk_avg"] - df["fantasy_ppr_7wk_avg"]
+        df["fantasy_prev_5wk_avg"] = grouped_player_df["fantasy_points"].shift(1).rolling(window=5, min_periods=1).mean().reset_index(level=0, drop=True)
 
         df["tds_3wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
         df["tds_7wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)

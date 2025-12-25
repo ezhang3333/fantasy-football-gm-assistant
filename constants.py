@@ -1,4 +1,4 @@
-SEASONS_TO_EXTRACT = ["2025", "2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017"]
+SEASONS_TO_EXTRACT = ["2024"]
 
 TEAM_NAME_TO_ABBR = {
     "Arizona Cardinals": "ARI",
@@ -71,8 +71,8 @@ qb_calculated_stats = [
 
     "fantasy_points",
     "fantasy_3wk_avg",
-    "fantasy_7wk_avg",
     "fantasy_trend_3v7",
+    "fantasy_prev_5wk_avg"
 
     "is_rookie",
     "is_second_year",
@@ -96,8 +96,9 @@ rb_calculated_stats = [
     "touches_trend_3v7",
     "snap_share_3wk_avg",
     "snap_share_trend_3v7",
-    "fantasy_ppr_3wk_avg",
-    "fantasy_ppr_trend_3v7",
+    "fantasy_3wk_avg",
+    "fantasy_trend_3v7",
+    "fantasy_prev_5wk_avg",
     "tds_3wk_avg",
     "tds_trend_3v7",
 
@@ -155,6 +156,7 @@ wr_calculated_stats = [
     "snap_share_trend_3v7",
     "fantasy_ppr_3wk_avg",
     "fantasy_ppr_trend_3v7",
+    "fantasy_prev_5wk_avg",
     "tds_3wk_avg",
     "tds_trend_3v7",
     "gadget_usage_3wk_avg",
@@ -211,6 +213,7 @@ te_calculated_stats = [
     "snap_share_trend_3v7",
     "fantasy_ppr_3wk_avg",
     "fantasy_ppr_trend_3v7",
+    "fantasy_prev_5wk_avg",
     "tds_3wk_avg",
     "tds_trend_3v7",
     "gadget_usage_3wk_avg",

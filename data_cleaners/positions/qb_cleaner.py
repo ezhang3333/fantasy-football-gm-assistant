@@ -10,7 +10,7 @@ class QBCleaner:
 
     def add_calculated_stats(self):
         df = self.merged_data.copy()
-        df = df.sort_values(["gsis_id", "week"])
+        df = df.sort_values(["gsis_id", "week", "season"])
 
         zero_fill_cols = [
             "pass_attempt",
@@ -64,7 +64,7 @@ class QBCleaner:
 
         df["fantasy_per_att"] = df["fantasy_points"] / att_safe
 
-        g = df.groupby("gsis_id", group_keys=False)
+        g = df.groupby(["gsis_id", "season"], group_keys=False)
 
         df["delta_attempts"] = g["pass_attempt"].diff().fillna(0)
         df["delta_air_yards"] = g["pass_air_yards"].diff().fillna(0)
@@ -73,6 +73,7 @@ class QBCleaner:
         df["fantasy_3wk_avg"] = g["fantasy_points"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
         df["fantasy_7wk_avg"] = g["fantasy_points"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
         df["fantasy_trend_3v7"] = df["fantasy_3wk_avg"] - df["fantasy_7wk_avg"]
+        df["fantasy_prev_5wk_avg"] = g["fantasy_points"].shift(1).rolling(window=5, min_periods=1).mean().reset_index(level=0, drop=True)
 
         df["attempts_3wk_avg"] = g["pass_attempt"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
         df["attempts_7wk_avg"] = g["pass_attempt"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
