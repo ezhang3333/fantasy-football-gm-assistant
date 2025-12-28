@@ -69,7 +69,6 @@ qb_calculated_stats = [
     "def_fantpt_allowed",
     "def_rush_ypa_allowed",
 
-    "fantasy_points",
     "fantasy_3wk_avg",
     "fantasy_trend_3v7",
     "fantasy_prev_5wk_avg",

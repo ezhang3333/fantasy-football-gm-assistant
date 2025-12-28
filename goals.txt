@@ -1,9 +1,4 @@
 Goals In Priority:
-GOAL - Use model to predict future 4 week average and then compare with fantasy_pts_after_4_weeks 
-       to see how close prediction is and adjust weights for model. Then you can use players with 
-       high future 4 week average compared to past 4 weeks average to find buy low and sell lows.
-       Then you can also do good breakout candidates with finding low waivered percentage players.
-
-1. Create gradient boosted tree model that gets fed our final dataset as features
-2. Create frontend to display and host this data
-3. Think about adding a game script feature for all positions
+1. Need to add a "fantasy_pts_4wk_future_avg" feature
+2. Built xgboost tree and train a loss function to add new trees to the model
+3. Create React frontend to display and host this data
