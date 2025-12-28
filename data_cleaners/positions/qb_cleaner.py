@@ -10,7 +10,7 @@ class QBCleaner:
 
     def add_calculated_stats(self):
         df = self.merged_data.copy()
-        df = df.sort_values(["gsis_id", "week", "season"]).reset_index(drop=True)
+        df = df.sort_values(["gsis_id", "season", "week"]).reset_index(drop=True)
 
         zero_fill_cols = [
             "pass_attempt",
@@ -73,13 +73,20 @@ class QBCleaner:
         df["fantasy_3wk_avg"] = g["fantasy_points"].rolling(window=3, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
         df["fantasy_7wk_avg"] = g["fantasy_points"].rolling(window=7, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
         df["fantasy_trend_3v7"] = df["fantasy_3wk_avg"] - df["fantasy_7wk_avg"]
-        shifted_fantasy_points = g["fantasy_points"].shift(1)
+        fantasy_points_col = g["fantasy_points"]
         df["fantasy_prev_5wk_avg"] = (
-            shifted_fantasy_points.groupby([df["gsis_id"], df["season"]], sort=False)
+            fantasy_points_col.shift(1).groupby([df["gsis_id"], df["season"]], sort=False)
             .rolling(window=5, min_periods=1)
             .mean()
             .reset_index(level=[0, 1], drop=True)
         )
+        s1 = fantasy_points_col.shift(-1)
+        s2 = fantasy_points_col.shift(-2)
+        s3 = fantasy_points_col.shift(-3)
+        s4 = fantasy_points_col.shift(-4)
+        sum_ = s1.fillna(0) + s2.fillna(0) + s3.fillna(0) + s4.fillna(0)
+        cnt  = s1.notna().astype(int) + s2.notna().astype(int) + s3.notna().astype(int) + s4.notna().astype(int)
+        df["fantasy_next_4wk_avg"] = sum_ / cnt.replace(0, np.nan)
 
         df["attempts_3wk_avg"] = g["pass_attempt"].rolling(window=3, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
         df["attempts_7wk_avg"] = g["pass_attempt"].rolling(window=7, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
@@ -127,9 +134,18 @@ class QBCleaner:
 
         df["years_exp"] = df["years_exp"].fillna(0).astype(float)
 
-        if hasattr(self, "calculated_stats"):
-            cols_to_fill = [c for c in self.calculated_stats if c in df.columns]
-            df[cols_to_fill] = df[cols_to_fill].fillna(0)
+        post_division_zero_fill_cols = [
+            "air_yards_per_att",
+            "yards_per_att",
+            "td_rate",
+            "int_rate",
+            "fantasy_per_att",
+            "rush_td_rate",
+        ]
+
+        for col in post_division_zero_fill_cols:
+            if col in df.columns:
+                df[col] = df[col].fillna(0)
 
         return df
 

@@ -72,6 +72,7 @@ qb_calculated_stats = [
     "fantasy_3wk_avg",
     "fantasy_trend_3v7",
     "fantasy_prev_5wk_avg",
+    "fantasy_next_4wk_avg",
 
     "is_rookie",
     "is_second_year",
@@ -98,6 +99,7 @@ rb_calculated_stats = [
     "fantasy_3wk_avg",
     "fantasy_trend_3v7",
     "fantasy_prev_5wk_avg",
+    "fantasy_next_4wk_avg",
     "tds_3wk_avg",
     "tds_trend_3v7",
 
@@ -156,6 +158,7 @@ wr_calculated_stats = [
     "fantasy_ppr_3wk_avg",
     "fantasy_ppr_trend_3v7",
     "fantasy_prev_5wk_avg",
+    "fantasy_next_4wk_avg",
     "tds_3wk_avg",
     "tds_trend_3v7",
     "gadget_usage_3wk_avg",
@@ -213,6 +216,7 @@ te_calculated_stats = [
     "fantasy_ppr_3wk_avg",
     "fantasy_ppr_trend_3v7",
     "fantasy_prev_5wk_avg",
+    "fantasy_next_4wk_avg",
     "tds_3wk_avg",
     "tds_trend_3v7",
     "gadget_usage_3wk_avg",

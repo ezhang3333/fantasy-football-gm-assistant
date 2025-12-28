@@ -57,8 +57,8 @@ class RBCleaner:
             3.0 * (df["rec_yards_gained"] >= 100) + 
             3.0 * (df["rec_yards_gained"] >= 200) 
         )
-
-        df_sorted = df.sort_values(["gsis_id", "week", "season"]).reset_index(drop=True)
+        df["fantasy_points"] = pd.to_numeric(df["fantasy_points"], errors="coerce")
+        df_sorted = df.sort_values(["gsis_id", "season", "week"]).reset_index(drop=True)
         grouped_player_df = df_sorted.groupby(["gsis_id", "season"], sort=False)
 
         df_sorted["delta_touches"] = grouped_player_df["touches"].diff(periods=1)
@@ -75,13 +75,20 @@ class RBCleaner:
         df_sorted["fantasy_3wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=3, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
         df_sorted["fantasy_7wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=7, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
         df_sorted["fantasy_trend_3v7"] = df_sorted["fantasy_3wk_avg"] - df_sorted["fantasy_7wk_avg"]
-        shifted_fantasy_points = grouped_player_df["fantasy_points"].shift(1)
+        fantasy_points_col = grouped_player_df["fantasy_points"]
         df_sorted["fantasy_prev_5wk_avg"] = (
-            shifted_fantasy_points.groupby([df_sorted["gsis_id"], df_sorted["season"]], sort=False)
+            fantasy_points_col.shift(1).groupby([df_sorted["gsis_id"], df_sorted["season"]], sort=False)
             .rolling(window=5, min_periods=1)
             .mean()
             .reset_index(level=[0, 1], drop=True)
         )
+        s1 = fantasy_points_col.shift(-1)
+        s2 = fantasy_points_col.shift(-2)
+        s3 = fantasy_points_col.shift(-3)
+        s4 = fantasy_points_col.shift(-4)
+        sum_ = s1.fillna(0) + s2.fillna(0) + s3.fillna(0) + s4.fillna(0)
+        cnt  = s1.notna().astype(int) + s2.notna().astype(int) + s3.notna().astype(int) + s4.notna().astype(int)
+        df_sorted["fantasy_next_4wk_avg"] = sum_ / cnt.replace(0, np.nan)
 
         df_sorted["tds_3wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=3, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
         df_sorted["tds_7wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=7, min_periods=1).mean().reset_index(level=[0, 1], drop=True)

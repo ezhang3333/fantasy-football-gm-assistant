@@ -5,11 +5,16 @@ from bs4 import BeautifulSoup
 from bs4 import Comment
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.common.exceptions import TimeoutException, WebDriverException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from data_cleaners.pfr_def_cleaner import PFRCleaner
 from services.espn_api import get_current_season
 import time
+from urllib3.exceptions import ReadTimeoutError
 
 """
 team_def_stats : [
@@ -33,27 +38,62 @@ class NFLWebScraper:
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("--window-size=1920,1080")
+        options.page_load_strategy = "eager"
 
         self.driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()),
             options=options
         )
+        # Selenium's HTTP client defaults to a ~120s read timeout; keep page-load below that
+        # so we get a Selenium TimeoutException instead of an urllib3 ReadTimeoutError.
+        self.driver.set_page_load_timeout(90)
+        self.driver.set_script_timeout(90)
 
     def close(self):
         if self.driver:
             self.driver.quit()
             self.driver = None
+
+    def _restart_driver(self):
+        self.close()
+        options = Options()
+        options.add_argument("--headless=new")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--window-size=1920,1080")
+        options.page_load_strategy = "eager"
+
+        self.driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()),
+            options=options
+        )
+        self.driver.set_page_load_timeout(90)
+        self.driver.set_script_timeout(90)
     
     def pfr_scrape_def_vs_stats(self, year, position):
         capitalized_position = position.upper()
         pfr_team_def_url = f'https://www.pro-football-reference.com/years/{year}/fantasy-points-against-{capitalized_position}.htm'
 
-        self.driver.get(pfr_team_def_url)
-        time.sleep(5)
+        for attempt in range(3):
+            try:
+                self.driver.get(pfr_team_def_url)
+                break
+            except TimeoutException:
+                self.driver.execute_script("window.stop();")
+                break
+            except (ReadTimeoutError, WebDriverException):
+                self._restart_driver()
+                if attempt == 2:
+                    raise
+
+        try:
+            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.ID, "div_fantasy_def")))
+        except TimeoutException:
+            pass
 
         html = self.driver.page_source
-
         def_vs_stats_uncleaned = self.extract_pfr_table(html, "div_fantasy_def", "fantasy_def")
+
         if def_vs_stats_uncleaned is None:
             return pd.DataFrame()
         

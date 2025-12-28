@@ -1,4 +1,5 @@
 Goals In Priority:
-1. Need to add a "fantasy_pts_4wk_future_avg" feature
-2. Built xgboost tree and train a loss function to add new trees to the model
-3. Create React frontend to display and host this data
+STAR: check to see if pfr is rate limiting our requests
+
+1. Built xgboost tree and train a loss function to add new trees to the model
+2. Create React frontend to display and host this data

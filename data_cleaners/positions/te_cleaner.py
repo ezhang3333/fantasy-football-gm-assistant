@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from constants import te_calculated_stats
 
 class TECleaner:
@@ -63,13 +64,14 @@ class TECleaner:
             3.0 * (df["rec_yards_gained"] >= 100) + 
             3.0 * (df["rec_yards_gained"] >= 200) 
         )
+        df["fantasy_points"] = pd.to_numeric(df["fantasy_points"], errors="coerce")
 
         # rushing volume
         df["rush_attempts"] = df["rush_attempt"]
         df["rush_ypa"] = df["rush_yards_gained"] / df["rush_attempt"]
         df["rush_share"] = df["rush_attempt"] / df["rush_attempt_team"]
 
-        df_sorted = df.sort_values(["gsis_id", "week", "season"]).reset_index(drop=True)
+        df_sorted = df.sort_values(["gsis_id", "season", "week"]).reset_index(drop=True)
         grouped_player_df = df_sorted.groupby(["gsis_id", "season"], sort=False)
 
         df_sorted["delta_targets"] = grouped_player_df["targets"].diff(periods=1)
@@ -91,13 +93,20 @@ class TECleaner:
         df_sorted["fantasy_ppr_3wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=3, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
         df_sorted["fantasy_ppr_7wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=7, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
         df_sorted["fantasy_ppr_trend_3v7"] = df_sorted["fantasy_ppr_3wk_avg"] - df_sorted["fantasy_ppr_7wk_avg"]
-        shifted_fantasy_points = grouped_player_df["fantasy_points"].shift(1)
+        fantasy_points_col = grouped_player_df["fantasy_points"]
         df_sorted["fantasy_prev_5wk_avg"] = (
-            shifted_fantasy_points.groupby([df_sorted["gsis_id"], df_sorted["season"]], sort=False)
+            fantasy_points_col.shift(1).groupby([df_sorted["gsis_id"], df_sorted["season"]], sort=False)
             .rolling(window=5, min_periods=1)
             .mean()
             .reset_index(level=[0, 1], drop=True)
         )
+        s1 = fantasy_points_col.shift(-1)
+        s2 = fantasy_points_col.shift(-2)
+        s3 = fantasy_points_col.shift(-3)
+        s4 = fantasy_points_col.shift(-4)
+        sum_ = s1.fillna(0) + s2.fillna(0) + s3.fillna(0) + s4.fillna(0)
+        cnt  = s1.notna().astype(int) + s2.notna().astype(int) + s3.notna().astype(int) + s4.notna().astype(int)
+        df_sorted["fantasy_next_4wk_avg"] = sum_ / cnt.replace(0, np.nan)
 
         df_sorted["tds_3wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=3, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
         df_sorted["tds_7wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=7, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
@@ -139,7 +148,7 @@ class TECleaner:
         # profile
         df["years_exp_filled"] = df["years_exp"].fillna(0)
         df["is_rookie"] = (df["years_exp"] == 0).astype(int)
-        df["is_second_year"] = (df["years_exp"] == 0).astype(int)
+        df["is_second_year"] = (df["years_exp"] == 1).astype(int)
         df["draft_number_filled"] = df["draft_number"].fillna(275)
         df["is_undrafted"] = (df["draft_number_filled"] == 275).astype(int)
 
