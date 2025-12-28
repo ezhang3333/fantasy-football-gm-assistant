@@ -28,7 +28,7 @@ class NFLDataPipeline:
         save_extracted=False, 
         save_cleaned=False, 
         save_final=False,
-        out_dir="data"
+        out_dir="pipeline_data"
     ):
         positions = [pos.upper() for pos in positions]
 

@@ -1,4 +1,4 @@
-SEASONS_TO_EXTRACT = ["2024"]
+SEASONS_TO_EXTRACT = ["2025", "2024", "2023"]
 
 TEAM_NAME_TO_ABBR = {
     "Arizona Cardinals": "ARI",
@@ -72,7 +72,7 @@ qb_calculated_stats = [
     "fantasy_points",
     "fantasy_3wk_avg",
     "fantasy_trend_3v7",
-    "fantasy_prev_5wk_avg"
+    "fantasy_prev_5wk_avg",
 
     "is_rookie",
     "is_second_year",

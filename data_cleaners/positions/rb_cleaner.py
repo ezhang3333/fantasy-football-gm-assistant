@@ -58,28 +58,36 @@ class RBCleaner:
             3.0 * (df["rec_yards_gained"] >= 200) 
         )
 
-        df_sorted = df.sort_values(["gsis_id", "week", "season"]) 
-        grouped_player_df = df_sorted.groupby(["gsis_id", "season"])
+        df_sorted = df.sort_values(["gsis_id", "week", "season"]).reset_index(drop=True)
+        grouped_player_df = df_sorted.groupby(["gsis_id", "season"], sort=False)
 
-        df["delta_touches"] = grouped_player_df["touches"].diff(periods=1)
+        df_sorted["delta_touches"] = grouped_player_df["touches"].diff(periods=1)
 
         # trends
-        df["touches_3wk_avg"] = grouped_player_df["touches"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
-        df["touches_7wk_avg"] = grouped_player_df["touches"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
-        df["touches_trend_3v7"] = df["touches_3wk_avg"] - df["touches_7wk_avg"]
+        df_sorted["touches_3wk_avg"] = grouped_player_df["touches"].rolling(window=3, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
+        df_sorted["touches_7wk_avg"] = grouped_player_df["touches"].rolling(window=7, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
+        df_sorted["touches_trend_3v7"] = df_sorted["touches_3wk_avg"] - df_sorted["touches_7wk_avg"]
 
-        df["snap_share_3wk_avg"] = grouped_player_df["snap_share"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
-        df["snap_share_7wk_avg"] = grouped_player_df["snap_share"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
-        df["snap_share_trend_3v7"] = df["snap_share_3wk_avg"] - df["snap_share_7wk_avg"]
+        df_sorted["snap_share_3wk_avg"] = grouped_player_df["snap_share"].rolling(window=3, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
+        df_sorted["snap_share_7wk_avg"] = grouped_player_df["snap_share"].rolling(window=7, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
+        df_sorted["snap_share_trend_3v7"] = df_sorted["snap_share_3wk_avg"] - df_sorted["snap_share_7wk_avg"]
 
-        df["fantasy_3wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
-        df["fantasy_7wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
-        df["fantasy_trend_3v7"] = df["fantasy_3wk_avg"] - df["fantasy_7wk_avg"]
-        df["fantasy_prev_5wk_avg"] = grouped_player_df["fantasy_points"].shift(1).rolling(window=5, min_periods=1).mean().reset_index(level=0, drop=True)
+        df_sorted["fantasy_3wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=3, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
+        df_sorted["fantasy_7wk_avg"] = grouped_player_df["fantasy_points"].rolling(window=7, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
+        df_sorted["fantasy_trend_3v7"] = df_sorted["fantasy_3wk_avg"] - df_sorted["fantasy_7wk_avg"]
+        shifted_fantasy_points = grouped_player_df["fantasy_points"].shift(1)
+        df_sorted["fantasy_prev_5wk_avg"] = (
+            shifted_fantasy_points.groupby([df_sorted["gsis_id"], df_sorted["season"]], sort=False)
+            .rolling(window=5, min_periods=1)
+            .mean()
+            .reset_index(level=[0, 1], drop=True)
+        )
 
-        df["tds_3wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
-        df["tds_7wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
-        df["tds_trend_3v7"] = df["tds_3wk_avg"] - df["tds_7wk_avg"]
+        df_sorted["tds_3wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=3, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
+        df_sorted["tds_7wk_avg"] = grouped_player_df["total_touchdowns"].rolling(window=7, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
+        df_sorted["tds_trend_3v7"] = df_sorted["tds_3wk_avg"] - df_sorted["tds_7wk_avg"]
+
+        df = df_sorted
 
         # rushing efficiency
         df["rush_ypc"] = df["rush_yards_gained"] / df["rush_attempt"]
@@ -105,13 +113,13 @@ class RBCleaner:
         df["is_favored"] = (team_spread < 0).astype(int)
         df["abs_spread"] = np.abs(team_spread)
 
-        # opposing defense
+        df["opp_team"] = np.where(df["team"] == df["team_home"], df["team_away"], df["team_home"])
         df = df.merge(
             self.rb_def_stats,
-            left_on=["season", "team_away"],
+            left_on=["season", "opp_team"],
             right_on=["season", "team_abbrev"],
             how="left"
-        ).drop(columns=["team_abbrev"])
+        ).drop(columns=["team_abbrev", "opp_team"], errors="ignore")
 
         # profile
         df["years_exp_filled"] = df["years_exp"].fillna(0)
