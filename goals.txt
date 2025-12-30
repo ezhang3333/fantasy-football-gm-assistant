@@ -1,5 +1,4 @@
 Goals In Priority:
-STAR: check to see if pfr is rate limiting our requests
 
 1. Built xgboost tree and train a loss function to add new trees to the model
 2. Create React frontend to display and host this data

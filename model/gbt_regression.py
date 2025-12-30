@@ -169,17 +169,12 @@ def train_xgb_regressor(
         colsample_bytree=0.8,
         reg_lambda=1.0,
         reg_alpha=0.0,
+        early_stopping_rounds=100,
         random_state=random_state,
         n_jobs=0,
     )
 
-    model.fit(
-        x_train,
-        y_train,
-        eval_set=[(x_val, y_val)],
-        verbose=False,
-        early_stopping_rounds=100,
-    )
+    model.fit(x_train, y_train, eval_set=[(x_val, y_val)], verbose=False)
 
     y_val_pred = model.predict(x_val)
     metrics = regression_metrics(y_val.to_numpy(dtype=float), y_val_pred)
@@ -189,7 +184,7 @@ def train_xgb_regressor(
     model_path = out_dir / "xgb_model.json"
     metadata_path = out_dir / "metadata.json"
 
-    model.save_model(model_path)
+    model.get_booster().save_model(model_path)
     metadata = {
         "position": position,
         "feature_cols": feature_cols,
