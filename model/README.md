@@ -38,3 +38,11 @@ python -m model.predict
 ```
 
 Outputs are written to `model/outputs/`.
+
+## Evaluate
+
+Evaluates each position model on the validation season (from `model/artifacts/<pos>/metadata.json`) and prints a compact summary, plus optional JSON output.
+
+```powershell
+python -m model.evaluate --out model/outputs/eval_summary.json
+```
