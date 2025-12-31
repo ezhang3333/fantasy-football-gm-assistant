@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 from constants import wr_calculated_stats
 
+def _safe_div(numer, denom):
+    denom = denom.replace(0, np.nan)
+    return numer / denom
+
 class WRCleaner:
     def __init__(self, merged_data, wr_def_stats):
         self.merged_data = merged_data[merged_data["position"] == "WR"].copy()
@@ -44,7 +48,7 @@ class WRCleaner:
         df["targets"] = df["rec_attempt"]
         df["air_yards"] = df["rec_air_yards"]
         df["snap_share"] = df["offense_pct"]
-        df["target_share"] = df["rec_attempt"] / df["rec_attempt_team"]
+        df["target_share"] = _safe_div(df["rec_attempt"], df["rec_attempt_team"])
         df["air_yards_share"] = df["percent_share_of_intended_air_yards"]
         df["total_touchdowns"] = df["rush_touchdown"] + df["rec_touchdown"]
 
@@ -68,8 +72,8 @@ class WRCleaner:
 
         # rushing volume
         df["rush_attempts"] = df["rush_attempt"]
-        df["rush_ypa"] = df["rush_yards_gained"] / df["rush_attempt"]
-        df["rush_share"] = df["rush_attempt"] / df["rush_attempt_team"]
+        df["rush_ypa"] = _safe_div(df["rush_yards_gained"], df["rush_attempt"])
+        df["rush_share"] = _safe_div(df["rush_attempt"], df["rush_attempt_team"])
 
         df_sorted = df.sort_values(["gsis_id", "season", "week"]).reset_index(drop=True)
         grouped_player_df = df_sorted.groupby(["gsis_id", "season"], sort=False)
@@ -116,11 +120,11 @@ class WRCleaner:
         df = df_sorted
 
         # efficiency
-        df["yards_per_target"] = df["rec_yards_gained"] / df["rec_attempt"]
-        df["rec_td_rate"] = df["rec_touchdown"] / df["receptions"]
-        df["catch_rate"] = df["receptions"] / df["rec_attempt"]
-        df["fp_per_target"] = df["fantasy_points"] / df["rec_attempt"]
-        df["racr"] = df["rec_yards_gained"] / df["air_yards"]
+        df["yards_per_target"] = _safe_div(df["rec_yards_gained"], df["rec_attempt"])
+        df["rec_td_rate"] = _safe_div(df["rec_touchdown"], df["receptions"])
+        df["catch_rate"] = _safe_div(df["receptions"], df["rec_attempt"])
+        df["fp_per_target"] = _safe_div(df["fantasy_points"], df["rec_attempt"])
+        df["racr"] = _safe_div(df["rec_yards_gained"], df["air_yards"])
 
         # environment
         is_home = df["team"] == df["team_home"]

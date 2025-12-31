@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 from constants import rb_calculated_stats
 
+def _safe_div(numer, denom):
+    denom = denom.replace(0, np.nan)
+    return numer / denom
+
 class RBCleaner:
     def __init__(self, merged_data, rb_def_stats):
         self.merged_data = merged_data[merged_data["position"] == "RB"].copy()
@@ -36,8 +40,8 @@ class RBCleaner:
         # volume
         df["touches"] = df["rec_attempt"] + df["rush_attempt"]
         df["snap_share"] = df["offense_pct"]
-        df["target_share"] = df["rec_attempt"] / df["rec_attempt_team"]
-        df["rush_share"] = df["rush_attempt"] / df["rush_attempt_team"]
+        df["target_share"] = _safe_div(df["rec_attempt"], df["rec_attempt_team"])
+        df["rush_share"] = _safe_div(df["rush_attempt"], df["rush_attempt_team"])
         df["weighted_opp_share"] = df["rush_attempt"] + 3 * df["rec_attempt"]
         df["total_touchdowns"] = df["rush_touchdown"] + df["rec_touchdown"]
 
@@ -97,14 +101,14 @@ class RBCleaner:
         df = df_sorted
 
         # rushing efficiency
-        df["rush_ypc"] = df["rush_yards_gained"] / df["rush_attempt"]
+        df["rush_ypc"] = _safe_div(df["rush_yards_gained"], df["rush_attempt"])
         df["rush_yoe_per_game"] = df["rush_yards_over_expected_per_att"] * df["rush_attempt"]
         df["rush_yoe_per_att"] = df["rush_yards_over_expected_per_att"]
         df["stacked_box_rate"] = df["percent_attempts_gte_eight_defenders"]
 
         # receiving
-        df["catch_rate"] = df["receptions"] / df["rec_attempt"]
-        df["rec_yards_per_target"] = df["rec_yards_gained"] / df["rec_attempt"]
+        df["catch_rate"] = _safe_div(df["receptions"], df["rec_attempt"])
+        df["rec_yards_per_target"] = _safe_div(df["rec_yards_gained"], df["rec_attempt"])
 
         # environment
         is_home = df["team"] == df["team_home"]

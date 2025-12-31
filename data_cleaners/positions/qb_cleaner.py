@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 from constants import TEAM_NAME_TO_ABBR, qb_calculated_stats
 
+def _safe_div(numer, denom):
+    denom = denom.replace(0, np.nan)
+    return numer / denom
+
 class QBCleaner:
     def __init__(self, merged_data, qb_def_stats):
         self.merged_data = merged_data[merged_data["position"] == "QB"].copy()
@@ -38,12 +42,11 @@ class QBCleaner:
             df["spread_line"] = df["spread_line"].astype(float).fillna(0)
 
         att = df["pass_attempt"]
-        att_safe = att.clip(lower=1)
 
-        df["air_yards_per_att"] = df["pass_air_yards"] / att_safe
-        df["yards_per_att"] = df["pass_yards_gained"] / att_safe
-        df["td_rate"] = df["pass_touchdown"] / att_safe
-        df["int_rate"] = df["pass_interception"] / att_safe
+        df["air_yards_per_att"] = _safe_div(df["pass_air_yards"], att)
+        df["yards_per_att"] = _safe_div(df["pass_yards_gained"], att)
+        df["td_rate"] = _safe_div(df["pass_touchdown"], att)
+        df["int_rate"] = _safe_div(df["pass_interception"], att)
 
         df["fantasy_points"] = (
             0.04 * df["pass_yards_gained"]
@@ -62,7 +65,7 @@ class QBCleaner:
             + 3.0 * (df["pass_yards_gained"] >= 400)
         )
 
-        df["fantasy_per_att"] = df["fantasy_points"] / att_safe
+        df["fantasy_per_att"] = _safe_div(df["fantasy_points"], att)
 
         g = df.groupby(["gsis_id", "season"], group_keys=False)
 
@@ -97,9 +100,8 @@ class QBCleaner:
         df["air_yards_trend_3v7"] = df["air_yards_3wk_avg"] - df["air_yards_7wk_avg"]
 
         rush_att = df["rush_attempt"]
-        rush_att_safe = rush_att.clip(lower=1)
 
-        df["rush_td_rate"] = df["rush_touchdown"] / rush_att_safe
+        df["rush_td_rate"] = _safe_div(df["rush_touchdown"], rush_att)
         df["rush_yards_per_game"] = df["rush_yards_gained"]
 
         df["rush_yards_3wk_avg"] = g["rush_yards_gained"].rolling(window=3, min_periods=1).mean().reset_index(level=[0, 1], drop=True)
