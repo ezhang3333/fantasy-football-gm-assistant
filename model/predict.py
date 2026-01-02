@@ -46,23 +46,11 @@ def main() -> None:
         scored = score_candidates(df_latest, position)
 
         base_cols = [c for c in IDENTIFIER_COLS if c in scored.columns]
-        out_cols = base_cols + ["pred_next4", "buy_low_score", "sell_high_score", "breakout_score"]
+        out_cols = base_cols + ["pred_next4", "delta"]
         out_cols = [c for c in out_cols if c in scored.columns]
 
         out_path = out_dir / f"{position.lower()}_predictions_{season}_wk{week}.csv"
         scored.sort_values("pred_next4", ascending=False)[out_cols].to_csv(out_path, index=False)
-
-        top_buy = scored.sort_values("buy_low_score", ascending=False)[out_cols].head(15)
-        top_sell = scored.sort_values("sell_high_score", ascending=False)[out_cols].head(15)
-        top_breakout = scored.sort_values("breakout_score", ascending=False)[out_cols].head(15)
-
-        print(f"\n[{position}] wrote {out_path}")
-        print(f"[{position}] top buy lows (by buy_low_score):")
-        print(top_buy.to_string(index=False))
-        print(f"\n[{position}] top sell highs (by sell_high_score):")
-        print(top_sell.to_string(index=False))
-        print(f"\n[{position}] top breakouts (by breakout_score):")
-        print(top_breakout.to_string(index=False))
 
 
 if __name__ == "__main__":

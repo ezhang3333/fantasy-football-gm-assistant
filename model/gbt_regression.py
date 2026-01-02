@@ -238,31 +238,5 @@ def score_candidates(df_latest: pd.DataFrame, position: Position) -> pd.DataFram
     if prev5_col not in df.columns:
         df[prev5_col] = np.nan
 
-    df["buy_low_score"] = df["pred_next4"] - pd.to_numeric(df[prev5_col], errors="coerce")
-    df["sell_high_score"] = pd.to_numeric(df[prev5_col], errors="coerce") - df["pred_next4"]
-
-    def safe_col(name: str) -> pd.Series:
-        if name not in df.columns:
-            return pd.Series(0.0, index=df.index)
-        return pd.to_numeric(df[name], errors="coerce").fillna(0.0)
-
-    if position == "QB":
-        df["breakout_score"] = (
-            df["buy_low_score"]
-            + 0.35 * safe_col("attempts_trend_3v7")
-            + 0.35 * safe_col("air_yards_trend_3v7")
-            + 0.20 * safe_col("rush_trend_3v7")
-        )
-    elif position == "RB":
-        df["breakout_score"] = df["buy_low_score"] + 0.7 * safe_col("touches_trend_3v7") + 0.3 * safe_col(
-            "snap_share_trend_3v7"
-        )
-    else:
-        df["breakout_score"] = (
-            df["buy_low_score"]
-            + 0.6 * safe_col("targets_trend_3v7")
-            + 0.4 * safe_col("air_yards_trend_3v7")
-            + 0.2 * safe_col("snap_share_trend_3v7")
-        )
-
+    df["delta"] = df["pred_next4"] - pd.to_numeric(df[prev5_col], errors="coerce")
     return df
