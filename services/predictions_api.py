@@ -3,6 +3,7 @@ from enum import Enum
 from functools import lru_cache
 from pathlib import Path
 from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from model.database import PredictionStore
 
 class Position(str, Enum):
@@ -12,6 +13,12 @@ class Position(str, Enum):
     TE = "TE"
 
 app = FastAPI(title="FantasyFootball Predictions API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 
 @lru_cache(maxsize=1)
