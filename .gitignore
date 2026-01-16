@@ -5,3 +5,4 @@ venv311/
 pipeline_data/
 model/artifacts/
 model/outputs/
+node_modules/
