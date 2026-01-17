@@ -1,5 +1,8 @@
 body{
     margin: 0;
+    background: #0f0f10;
+    color: #e7e7e7;
+    font-family: "Sora", "Space Grotesk", "Outfit", system-ui, sans-serif;
 }
 
 .base-container {
@@ -13,8 +16,13 @@ body{
     max-width: 300px;
     width: 300px;
     flex: 0 0 300x;
-    background-color: rgba(16, 15, 15, 0.904);
+    background-color: #141414;
     overflow: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border-right: 1px solid #222;
 }
 
 .output-container {
@@ -22,4 +30,74 @@ body{
     min-width: 0;
     display: flex;
     justify-content: center;
+}
+
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: #bdbdbd;
+}
+
+.sidebar-subtitle {
+    font-size: 12px;
+    color: #7e7e7e;
+}
+
+.history-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #222;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.history-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #1c1c1c;
+    border: 1px solid #2a2a2a;
+}
+
+.history-label {
+    font-size: 13px;
+    color: #e0e0e0;
+}
+
+.history-time {
+    font-size: 11px;
+    color: #8f8f8f;
+}
+
+.train-button {
+    margin-top: 4px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #3a3a3a;
+    background: linear-gradient(135deg, #f0f0f0, #bdbdbd);
+    color: #1a1a1a;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.train-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }

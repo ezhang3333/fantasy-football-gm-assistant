@@ -1,4 +1,20 @@
 .filter-container {
-    display: flex;
-    flex: 1;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.filter-label {
+  color: white;
+  text-align: left;
+}
+
+.filter-input {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 9999px;
+  padding: 6px 12px;
 }

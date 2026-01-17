@@ -12,6 +12,12 @@ const FILTERS = [
   { name: "reg_alpha", label: "reg_alpha", min: 0, step: 0.1 },
 ];
 
+const HISTORY = [
+  { id: "run-0042", label: "Run 42 · QB/RB · val 2024", time: "2h ago" },
+  { id: "run-0041", label: "Run 41 · WR/TE · val 2024", time: "Yesterday" },
+  { id: "run-0040", label: "Run 40 · All · val 2023", time: "2d ago" },
+];
+
 export default function App() {
   const [params, setParams] = useState({
     n_estimators: "300",
@@ -30,6 +36,11 @@ export default function App() {
   return (
     <div className="base-container">
       <div className="filter-and-history-sidebar">
+        <div className="sidebar-section">
+          <div className="sidebar-title">Model Parameters</div>
+          <div className="sidebar-subtitle">Fine-tune training inputs</div>
+        </div>
+
         {FILTERS.map((f) => (
           <ModelFilter
             key={f.name}
@@ -42,6 +53,21 @@ export default function App() {
             step={f.step}
           />
         ))}
+
+        <div className="history-section">
+          <div className="sidebar-title">Training History</div>
+          <div className="history-list">
+            {HISTORY.map((item) => (
+              <div key={item.id} className="history-row">
+                <div className="history-label">{item.label}</div>
+                <div className="history-time">{item.time}</div>
+              </div>
+            ))}
+          </div>
+          <button className="train-button" type="button">
+            Train Model
+          </button>
+        </div>
       </div>
 
       <div className="output-container">

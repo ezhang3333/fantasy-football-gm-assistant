@@ -5,8 +5,9 @@ export default function ModelFilter({ name, label, value, onChange, min, max, st
 
   return (
     <div className="filter-container">
-      <label htmlFor={id}>{label}</label>
+      <label className="filter-label" htmlFor={id}>{label}</label>
       <input
+        className="filter-input"
         id={id}
         name={name}
         type="number"
