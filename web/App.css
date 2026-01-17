@@ -1,0 +1,19 @@
+.base-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.filter-and-history-sidebar {
+    max-width: 200px;
+    width: 200px;
+    flex: 0 0 200x;
+}
+
+.output-container {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+}

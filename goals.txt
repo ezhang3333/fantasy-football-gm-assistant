@@ -4,3 +4,8 @@ Goals In Priority:
 2. Create a react page that can interact with the model and retrain the model whihc would then reupdate this
    entire pipeline of database, fast api endpoint, react components
 3. Fine tune the model
+
+
+WHAT DO I NEED IN THE FRONTEND:
+
+
