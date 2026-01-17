@@ -1,8 +1,6 @@
 Goals In Priority:
 
-1. Create database for all the ml information using sqlite3 with python inside predict.py or somewhere else fitting
-2. Create fast api endpoints that expose this model information for our react frontend
-3. Have the react components extract this information and display it 
-4. Create a react page that can interact with the model and retrain the model whihc would then reupdate this
+1. Have the react components extract this information and display it 
+2. Create a react page that can interact with the model and retrain the model whihc would then reupdate this
    entire pipeline of database, fast api endpoint, react components
-5. Fine tune the model
+3. Fine tune the model
