@@ -13,9 +13,66 @@ const FILTERS = [
 ];
 
 const HISTORY = [
-  { id: "run-0042", label: "Run 42 · QB/RB · val 2024", time: "2h ago" },
-  { id: "run-0041", label: "Run 41 · WR/TE · val 2024", time: "Yesterday" },
-  { id: "run-0040", label: "Run 40 · All · val 2023", time: "2d ago" },
+  { id: "run-0042", label: "Run 42 - QB/RB - val 2024", time: "2h ago" },
+  { id: "run-0041", label: "Run 41 - WR/TE - val 2024", time: "Yesterday" },
+  { id: "run-0040", label: "Run 40 - All - val 2023", time: "2d ago" },
+];
+
+const MOCK_RESULTS = [
+  {
+    id: "p1",
+    full_name: "Josh Allen",
+    team: "BUF",
+    position: "QB",
+    pred_next4: 23.4,
+    delta: 3.1,
+    fantasy_prev_5wk_avg: 20.3,
+  },
+  {
+    id: "p2",
+    full_name: "Jahmyr Gibbs",
+    team: "DET",
+    position: "RB",
+    pred_next4: 17.8,
+    delta: 2.4,
+    fantasy_prev_5wk_avg: 15.4,
+  },
+  {
+    id: "p3",
+    full_name: "CeeDee Lamb",
+    team: "DAL",
+    position: "WR",
+    pred_next4: 18.9,
+    delta: 1.2,
+    fantasy_prev_5wk_avg: 17.7,
+  },
+  {
+    id: "p4",
+    full_name: "Sam LaPorta",
+    team: "DET",
+    position: "TE",
+    pred_next4: 12.6,
+    delta: -0.4,
+    fantasy_prev_5wk_avg: 13.0,
+  },
+  {
+    id: "p5",
+    full_name: "Brock Purdy",
+    team: "SF",
+    position: "QB",
+    pred_next4: 19.2,
+    delta: 0.8,
+    fantasy_prev_5wk_avg: 18.4,
+  },
+  {
+    id: "p6",
+    full_name: "Bijan Robinson",
+    team: "ATL",
+    position: "RB",
+    pred_next4: 16.1,
+    delta: -1.0,
+    fantasy_prev_5wk_avg: 17.1,
+  },
 ];
 
 export default function App() {
@@ -28,10 +85,31 @@ export default function App() {
     reg_lambda: "1",
     reg_alpha: "0",
   });
+  const [viewMode, setViewMode] = useState("list");
+  const [positionFilter, setPositionFilter] = useState("All");
+  const [minPred, setMinPred] = useState("0");
+  const [minDelta, setMinDelta] = useState("0");
 
   const handleParamChange = (name, rawValue) => {
     setParams((prev) => ({ ...prev, [name]: rawValue }));
   };
+
+  const parsedMinPred = Number.parseFloat(minPred);
+  const parsedMinDelta = Number.parseFloat(minDelta);
+  const minPredValue = Number.isNaN(parsedMinPred) ? 0 : parsedMinPred;
+  const minDeltaValue = Number.isNaN(parsedMinDelta) ? 0 : parsedMinDelta;
+  const filteredResults = MOCK_RESULTS.filter((row) => {
+    if (positionFilter !== "All" && row.position !== positionFilter) {
+      return false;
+    }
+    if (row.pred_next4 < minPredValue) {
+      return false;
+    }
+    if (row.delta < minDeltaValue) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="base-container">
@@ -71,7 +149,130 @@ export default function App() {
       </div>
 
       <div className="output-container">
-        <h3>Fantasy Football Predictor: Gradient Boosted Tree Model</h3>
+        <div className="output-header">
+          <div>
+            <div className="output-title">Fantasy Football Predictor</div>
+            <div className="output-subtitle">Gradient Boosted Tree Model</div>
+          </div>
+          <div className="view-toggle">
+            <button
+              className={`toggle-button ${viewMode === "list" ? "active" : ""}`}
+              type="button"
+              onClick={() => setViewMode("list")}
+            >
+              List
+            </button>
+            <button
+              className={`toggle-button ${viewMode === "grid" ? "active" : ""}`}
+              type="button"
+              onClick={() => setViewMode("grid")}
+            >
+              Grid
+            </button>
+          </div>
+        </div>
+
+        <div className="output-filters">
+          <div className="filter-group">
+            <label className="filter-label" htmlFor="position-filter">
+              Position
+            </label>
+            <select
+              id="position-filter"
+              className="filter-select"
+              value={positionFilter}
+              onChange={(e) => setPositionFilter(e.target.value)}
+            >
+              <option value="All">All</option>
+              <option value="QB">QB</option>
+              <option value="RB">RB</option>
+              <option value="WR">WR</option>
+              <option value="TE">TE</option>
+            </select>
+          </div>
+          <div className="filter-group">
+            <label className="filter-label" htmlFor="min-pred">
+              Min pred_next4
+            </label>
+            <input
+              id="min-pred"
+              className="filter-input"
+              type="number"
+              step="0.1"
+              value={minPred}
+              onChange={(e) => setMinPred(e.target.value)}
+            />
+          </div>
+          <div className="filter-group">
+            <label className="filter-label" htmlFor="min-delta">
+              Min delta
+            </label>
+            <input
+              id="min-delta"
+              className="filter-input"
+              type="number"
+              step="0.1"
+              value={minDelta}
+              onChange={(e) => setMinDelta(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {viewMode === "list" ? (
+          <div className="results-table">
+            <div className="results-row results-header">
+              <div>Player</div>
+              <div>Team</div>
+              <div>Pos</div>
+              <div>pred_next4</div>
+              <div>delta</div>
+              <div>prev_5wk_avg</div>
+            </div>
+            {filteredResults.map((row) => (
+              <div key={row.id} className="results-row">
+                <div className="player-cell">{row.full_name}</div>
+                <div>{row.team}</div>
+                <div>{row.position}</div>
+                <div>{row.pred_next4.toFixed(1)}</div>
+                <div className={row.delta >= 0 ? "delta up" : "delta down"}>
+                  {row.delta.toFixed(1)}
+                </div>
+                <div>{row.fantasy_prev_5wk_avg.toFixed(1)}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="results-grid">
+            {filteredResults.map((row) => (
+              <div key={row.id} className="result-card">
+                <div className="card-header">
+                  <div className="card-name">{row.full_name}</div>
+                  <div className="card-meta">
+                    {row.team} - {row.position}
+                  </div>
+                </div>
+                <div className="card-stats">
+                  <div>
+                    <div className="stat-label">pred_next4</div>
+                    <div className="stat-value">{row.pred_next4.toFixed(1)}</div>
+                  </div>
+                  <div>
+                    <div className="stat-label">delta</div>
+                    <div className={`stat-value ${row.delta >= 0 ? "up" : "down"}`}>
+                      {row.delta.toFixed(1)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="stat-label">prev_5wk_avg</div>
+                    <div className="stat-value">
+                      {row.fantasy_prev_5wk_avg.toFixed(1)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
