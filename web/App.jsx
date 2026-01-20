@@ -166,7 +166,7 @@ export default function App() {
 
         <div className="history-section">
           <div className="sidebar-title">Training History</div>
-          <div className="history-list">
+          <div className="history-list scroll-container">
             {lastRuns.map((prediction_run) => (
               <div key={prediction_run.run_uuid} className="history-row">
                 <div className="history-label">LABEL</div>
