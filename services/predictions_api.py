@@ -112,8 +112,8 @@ async def train_models(payload: TrainRequest, store: PredictionStore = Depends(g
         )
         store.save_predictions(run_uuid, result.scored, payload_cols=_default_output_columns(result.scored))
         runs.append(run_uuid)
-
-    return {"runs": runs}
+    
+    return store.get_latest_run()
 
 @app.post("/train")
 async def train_model(model_parameters):

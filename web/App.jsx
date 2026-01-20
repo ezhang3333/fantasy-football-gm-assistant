@@ -12,11 +12,6 @@ const FILTERS = [
   { name: "reg_alpha", label: "reg_alpha", min: 0, step: 0.1 },
 ];
 
-const HISTORY = [
-  { id: "run-0042", label: "Run 42 - QB/RB - val 2024", time: "2h ago" },
-  { id: "run-0041", label: "Run 41 - WR/TE - val 2024", time: "Yesterday" },
-  { id: "run-0040", label: "Run 40 - All - val 2023", time: "2d ago" },
-];
 
 const MOCK_RESULTS = [
   {
@@ -123,7 +118,7 @@ export default function App() {
         throw new Error(`Train failed (${response.status})`);
       }
       const data = await response.json();
-      setLastRuns(Array.isArray(data.runs) ? data.runs : []);
+      setLastRuns((prev) => [data, ...prev]);
     } catch (error) {
       setTrainError(error instanceof Error ? error.message : "Train failed");
     } finally {
@@ -172,10 +167,10 @@ export default function App() {
         <div className="history-section">
           <div className="sidebar-title">Training History</div>
           <div className="history-list">
-            {HISTORY.map((item) => (
-              <div key={item.id} className="history-row">
-                <div className="history-label">{item.label}</div>
-                <div className="history-time">{item.time}</div>
+            {lastRuns.map((prediction_run) => (
+              <div key={prediction_run.run_uuid} className="history-row">
+                <div className="history-label">LABEL</div>
+                <div className="history-time">{prediction_run.created_at}</div>
               </div>
             ))}
           </div>
@@ -189,7 +184,7 @@ export default function App() {
           </button>
           {trainError ? <div className="history-time">{trainError}</div> : null}
           {lastRuns.length > 0 ? (
-            <div className="history-time">Latest run: {lastRuns[0]}</div>
+            <div className="history-time">Latest run: {lastRuns[0].run_uuid}</div>
           ) : null}
         </div>
       </div>
