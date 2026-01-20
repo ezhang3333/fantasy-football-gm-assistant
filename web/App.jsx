@@ -85,13 +85,50 @@ export default function App() {
     reg_lambda: "1",
     reg_alpha: "0",
   });
+  const [isTraining, setIsTraining] = useState(false);
+  const [trainError, setTrainError] = useState("");
+  const [lastRuns, setLastRuns] = useState([]);
   const [viewMode, setViewMode] = useState("list");
   const [positionFilter, setPositionFilter] = useState("All");
   const [minPred, setMinPred] = useState("0");
   const [minDelta, setMinDelta] = useState("0");
+  const apiBase = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
 
   const handleParamChange = (name, rawValue) => {
     setParams((prev) => ({ ...prev, [name]: rawValue }));
+  };
+
+  const handleTrain = async () => {
+    setIsTraining(true);
+    setTrainError("");
+
+    const payload = {
+      positions: ["QB", "RB", "WR", "TE"],
+      n_estimators: Number(params.n_estimators),
+      learning_rate: Number(params.learning_rate),
+      max_depth: Number(params.max_depth),
+      subsample: Number(params.subsample),
+      colsample_bytree: Number(params.colsample_bytree),
+      reg_lambda: Number(params.reg_lambda),
+      reg_alpha: Number(params.reg_alpha),
+    };
+
+    try {
+      const response = await fetch(`${apiBase}/train`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error(`Train failed (${response.status})`);
+      }
+      const data = await response.json();
+      setLastRuns(Array.isArray(data.runs) ? data.runs : []);
+    } catch (error) {
+      setTrainError(error instanceof Error ? error.message : "Train failed");
+    } finally {
+      setIsTraining(false);
+    }
   };
 
   const parsedMinPred = Number.parseFloat(minPred);
@@ -142,9 +179,18 @@ export default function App() {
               </div>
             ))}
           </div>
-          <button className="train-button" type="button">
-            Train Model
+          <button
+            className="train-button"
+            type="button"
+            onClick={handleTrain}
+            disabled={isTraining}
+          >
+            {isTraining ? "Training..." : "Train Model"}
           </button>
+          {trainError ? <div className="history-time">{trainError}</div> : null}
+          {lastRuns.length > 0 ? (
+            <div className="history-time">Latest run: {lastRuns[0]}</div>
+          ) : null}
         </div>
       </div>
 
@@ -187,7 +233,7 @@ export default function App() {
               <option value="QB">QB</option>
               <option value="RB">RB</option>
               <option value="WR">WR</option>
-              <option value="TE">TE</option>
+              <option value ="TE">TE</option>
             </select>
           </div>
           <div className="filter-group">

@@ -129,6 +129,43 @@ class TrainedModel:
     metadata_path: Path
 
 
+@dataclass(frozen=True)
+class XGBHyperParams:
+    n_estimators: int = 5000
+    learning_rate: float = 0.02
+    max_depth: int = 4
+    min_child_weight: float = 10.0
+    subsample: float = 0.8
+    colsample_bytree: float = 0.8
+    reg_lambda: float = 1.0
+    reg_alpha: float = 0.0
+    early_stopping_rounds: int = 100
+
+
+def build_xgb_regressor(
+    params: XGBHyperParams,
+    *,
+    random_state: int,
+    n_jobs: int = 0,
+):
+    xgb = _require_xgboost()
+    return xgb.XGBRegressor(
+        objective="reg:squarederror",
+        eval_metric="mae",
+        n_estimators=params.n_estimators,
+        learning_rate=params.learning_rate,
+        max_depth=params.max_depth,
+        min_child_weight=params.min_child_weight,
+        subsample=params.subsample,
+        colsample_bytree=params.colsample_bytree,
+        reg_lambda=params.reg_lambda,
+        reg_alpha=params.reg_alpha,
+        early_stopping_rounds=params.early_stopping_rounds,
+        random_state=random_state,
+        n_jobs=n_jobs,
+    )
+
+
 def train_xgb_regressor(
     position: Position,
     df: pd.DataFrame,
@@ -136,8 +173,9 @@ def train_xgb_regressor(
     *,
     val_season: int | None = None,
     random_state: int = 7,
+    params: XGBHyperParams | None = None,
 ) -> TrainedModel:
-    xgb = _require_xgboost()
+    params = params or XGBHyperParams()
 
     feature_cols, target_col = make_feature_set(position)
     train_df, val_df, val_season = time_split_by_season(df, val_season=val_season)
@@ -158,21 +196,7 @@ def train_xgb_regressor(
     x_train = apply_median_imputer(x_train_raw, medians)
     x_val = apply_median_imputer(x_val_raw, medians)
 
-    model = xgb.XGBRegressor(
-        objective="reg:squarederror",
-        eval_metric="mae",
-        n_estimators=5000,
-        learning_rate=0.02,
-        max_depth=4,
-        min_child_weight=10,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        reg_lambda=1.0,
-        reg_alpha=0.0,
-        early_stopping_rounds=100,
-        random_state=random_state,
-        n_jobs=0,
-    )
+    model = build_xgb_regressor(params, random_state=random_state)
 
     model.fit(x_train, y_train, eval_set=[(x_val, y_val)], verbose=False)
 
