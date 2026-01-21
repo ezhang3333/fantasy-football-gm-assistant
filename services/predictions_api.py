@@ -78,6 +78,13 @@ async def get_latest_predictions(position: Position, store: PredictionStore = De
     return store.get_predictions(run_uuid=run.run_uuid)
 
 
+@app.get("/predictions/runs/latest")
+async def get_latest_runs(
+    limit: int = Query(default=50, ge=1, le=500),
+    store: PredictionStore = Depends(get_store),
+):
+    return store.get_past_runs_for_history_list(limit=limit)
+
 @app.post("/train")
 async def train_models(payload: TrainRequest, store: PredictionStore = Depends(get_store)):
     params = XGBHyperParams(
@@ -114,7 +121,3 @@ async def train_models(payload: TrainRequest, store: PredictionStore = Depends(g
         runs.append(run_uuid)
     
     return store.get_latest_run()
-
-@app.post("/train")
-async def train_model(model_parameters):
-    return

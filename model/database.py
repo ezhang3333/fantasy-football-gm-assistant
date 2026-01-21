@@ -4,7 +4,7 @@ import json
 import sqlite3
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any, Iterator, Mapping, Sequence
 from uuid import uuid4
@@ -332,6 +332,21 @@ class PredictionStore:
             model_dir=None if row["model_dir"] is None else str(row["model_dir"]),
             meta=meta,
         )
+    
+    def get_past_runs_for_history_list(self, *, limit: int = 50):
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT run_uuid, created_at, position, season
+                FROM prediction_runs
+                ORDER BY created_at DESC
+                LIMIT :limit
+                """,
+                {"limit": int(limit)},
+            ).fetchall()
+
+        return [dict(r) for r in rows]
+        
 
     def get_predictions(self, *, run_uuid: str, limit: int | None = None) -> list[dict[str, Any]]:
         limit_sql = "" if limit is None else "LIMIT ?"

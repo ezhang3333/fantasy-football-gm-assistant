@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./css/App.css";
 import ModelFilter from "./ModelFilter.jsx";
 
@@ -88,6 +88,16 @@ export default function App() {
   const [minPred, setMinPred] = useState("0");
   const [minDelta, setMinDelta] = useState("0");
   const apiBase = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
+
+  useEffect(() => {
+    const apiUrl = `${apiBase}/predictions/runs/latest`
+    const fetchAPI = async () => {
+      const response = await fetch(apiUrl)
+      const data = await response.json()
+      setLastRuns(data)
+    }
+    fetchAPI()
+  }, [apiBase]);
 
   const handleParamChange = (name, rawValue) => {
     setParams((prev) => ({ ...prev, [name]: rawValue }));
