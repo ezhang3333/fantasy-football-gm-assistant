@@ -333,7 +333,7 @@ class PredictionStore:
             meta=meta,
         )
     
-    def get_past_runs_for_history_list(self, *, limit: int = 50):
+    def get_past_runs_for_history_list(self, *, limit: int = 15):
         with self._connect() as conn:
             rows = conn.execute(
                 """

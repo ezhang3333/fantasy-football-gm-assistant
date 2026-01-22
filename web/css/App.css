@@ -1,8 +1,21 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
 body{
     margin: 0;
     background: #0f0f10;
     color: #e7e7e7;
     font-family: "Sora", "Space Grotesk", "Outfit", system-ui, sans-serif;
+    overflow: hidden;
 }
 
 .base-container {
@@ -18,11 +31,12 @@ body{
     flex: 0 0 300x;
     background-color: #141414;
     overflow: hidden;
-    padding: 16px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     border-right: 1px solid #222;
+    height: 100%;
 }
 
 .output-container {
@@ -59,14 +73,17 @@ body{
     margin-top: 8px;
     padding-top: 12px;
     border-top: 1px solid #222;
+    flex: 1;
+    min-height: 0;
 }
 
 .history-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    height: 230px;
     overflow: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .history-row {
@@ -89,9 +106,16 @@ body{
     color: #8f8f8f;
 }
 
+.history-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+}
+
 .train-button {
-    margin-top: 4px;
-    padding: 10px 12px;
+    margin-top: 0;
+    padding: 8px 12px;
     border-radius: 10px;
     border: 1px solid #3a3a3a;
     background: linear-gradient(135deg, #f0f0f0, #bdbdbd);

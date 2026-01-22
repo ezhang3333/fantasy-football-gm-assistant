@@ -90,7 +90,7 @@ export default function App() {
   const apiBase = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
 
   useEffect(() => {
-    const apiUrl = `${apiBase}/predictions/runs/latest`
+    const apiUrl = `${apiBase}/predictions/runs/list`
     const fetchAPI = async () => {
       const response = await fetch(apiUrl)
       const data = await response.json()
@@ -184,18 +184,17 @@ export default function App() {
               </div>
             ))}
           </div>
-          <button
-            className="train-button"
-            type="button"
-            onClick={handleTrain}
-            disabled={isTraining}
-          >
-            {isTraining ? "Training..." : "Train Model"}
-          </button>
-          {trainError ? <div className="history-time">{trainError}</div> : null}
-          {lastRuns.length > 0 ? (
-            <div className="history-time">Latest run: {lastRuns[0].run_uuid}</div>
-          ) : null}
+          <div className="history-footer">
+            {trainError ? <div className="history-time">{trainError}</div> : null}
+            <button
+              className="train-button"
+              type="button"
+              onClick={handleTrain}
+              disabled={isTraining}
+            >
+              {isTraining ? "Training..." : "Train Model"}
+            </button>
+          </div>
         </div>
       </div>
 

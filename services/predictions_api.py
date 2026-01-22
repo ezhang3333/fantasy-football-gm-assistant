@@ -9,6 +9,10 @@ from pydantic import BaseModel, Field
 from model.database import PredictionStore
 from model.gbt_regression import XGBHyperParams, load_final_dataset, train_xgb_regressor
 from model.predict import _default_output_columns, predict_position
+from constants import DB_PATH
+import logging
+
+logger = logging.getLogger("uvicorn.error")
 
 class Position(str, Enum):
     QB = "QB"
@@ -31,7 +35,8 @@ app.add_middleware(
 
 @lru_cache(maxsize=1)
 def _store() -> PredictionStore:
-    store = PredictionStore("model/outputs/predictions.sqlite3")
+    db_path = DB_PATH
+    store = PredictionStore(db_path)
     store.ensure_schema()
     return store
 
@@ -54,11 +59,6 @@ class TrainRequest(BaseModel):
     reg_alpha: float = Field(default=0.0, ge=0)
 
 
-@app.get("/predictions/runs/{run_uuid}")
-async def get_predictions_for_run(run_uuid: str, store: PredictionStore = Depends(get_store)):
-    return store.get_predictions(run_uuid=run_uuid)
-
-
 @app.get("/predictions/top")
 async def get_top_predictions(
     position: Position,
@@ -70,6 +70,22 @@ async def get_top_predictions(
     return store.get_top_predictions(position=position.value, season=season, week=week, limit=limit)
 
 
+@app.get("/predictions/runs/list")
+async def get_list_of_runs(
+    limit: int = 15,
+    store: PredictionStore = Depends(get_store),
+):
+    logger.info("API file: %s", __file__)
+    logger.info("DB_PATH: %s", DB_PATH)
+    logger.info("Runs: %s", len(store.get_past_runs_for_history_list(limit=15)))
+    return store.get_past_runs_for_history_list(limit=limit)
+
+
+@app.get("/predictions/runs/{run_uuid}")
+async def get_predictions_for_run(run_uuid: str, store: PredictionStore = Depends(get_store)):
+    return store.get_predictions(run_uuid=run_uuid)
+
+
 @app.get("/predictions/latest/{position}")
 async def get_latest_predictions(position: Position, store: PredictionStore = Depends(get_store)):
     run = store.get_latest_run(position=position.value)
@@ -77,13 +93,6 @@ async def get_latest_predictions(position: Position, store: PredictionStore = De
         raise HTTPException(status_code=404, detail=f"No runs found for position={position.value}")
     return store.get_predictions(run_uuid=run.run_uuid)
 
-
-@app.get("/predictions/runs/latest")
-async def get_latest_runs(
-    limit: int = Query(default=50, ge=1, le=500),
-    store: PredictionStore = Depends(get_store),
-):
-    return store.get_past_runs_for_history_list(limit=limit)
 
 @app.post("/train")
 async def train_models(payload: TrainRequest, store: PredictionStore = Depends(get_store)):

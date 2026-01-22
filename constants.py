@@ -1,3 +1,7 @@
+from pathlib import Path
+
+DB_PATH = str((Path(__file__).resolve().parent / "model" / "outputs" / "predictions.sqlite3"))
+
 SEASONS_TO_EXTRACT = ["2025", "2024", "2023"]
 
 TEAM_NAME_TO_ABBR = {
