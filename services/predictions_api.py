@@ -10,9 +10,7 @@ from model.database import PredictionStore
 from model.gbt_regression import XGBHyperParams, load_final_dataset, train_xgb_regressor
 from model.predict import _default_output_columns, predict_position
 from constants import DB_PATH
-import logging
 
-logger = logging.getLogger("uvicorn.error")
 
 class Position(str, Enum):
     QB = "QB"
@@ -75,9 +73,6 @@ async def get_list_of_runs(
     limit: int = 15,
     store: PredictionStore = Depends(get_store),
 ):
-    logger.info("API file: %s", __file__)
-    logger.info("DB_PATH: %s", DB_PATH)
-    logger.info("Runs: %s", len(store.get_past_runs_for_history_list(limit=15)))
     return store.get_past_runs_for_history_list(limit=limit)
 
 
