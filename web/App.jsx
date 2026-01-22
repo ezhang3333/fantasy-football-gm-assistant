@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./css/App.css";
 import ModelFilter from "./ModelFilter.jsx";
+import HistoryListItem from "./HistoryListItem.jsx";
 
 const FILTERS = [
   { name: "n_estimators", label: "n_estimators", min: 1, step: 1 },
@@ -178,10 +179,7 @@ export default function App() {
           <div className="sidebar-title">Training History</div>
           <div className="history-list scroll-container">
             {lastRuns.map((prediction_run) => (
-              <div key={prediction_run.run_uuid} className="history-row">
-                <div className="history-label">LABEL</div>
-                <div className="history-time">{prediction_run.created_at}</div>
-              </div>
+              <HistoryListItem key={prediction_run.run_uuid} runData={prediction_run}/>
             ))}
           </div>
           <div className="history-footer">

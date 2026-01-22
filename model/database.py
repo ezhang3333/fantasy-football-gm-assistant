@@ -337,7 +337,7 @@ class PredictionStore:
         with self._connect() as conn:
             rows = conn.execute(
                 """
-                SELECT run_uuid, created_at, position, season
+                SELECT run_uuid, created_at, position, season, meta_json
                 FROM prediction_runs
                 ORDER BY created_at DESC
                 LIMIT :limit
