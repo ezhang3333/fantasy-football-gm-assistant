@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import "./css/App.css";
 import ModelFilter from "./ModelFilter.jsx";
 import HistoryListItem from "./HistoryListItem.jsx";
-import { trainModel, listRuns } from "./api/prediction.js";
+import { trainModel, listRuns, getRunPredictions } from "./api/prediction.js";
+
 
 const FILTERS = [
   { name: "n_estimators", label: "n_estimators", min: 1, step: 1 },
@@ -14,63 +15,6 @@ const FILTERS = [
   { name: "reg_alpha", label: "reg_alpha", min: 0, step: 0.1 },
 ];
 
-
-const MOCK_RESULTS = [
-  {
-    id: "p1",
-    full_name: "Josh Allen",
-    team: "BUF",
-    position: "QB",
-    pred_next4: 23.4,
-    delta: 3.1,
-    fantasy_prev_5wk_avg: 20.3,
-  },
-  {
-    id: "p2",
-    full_name: "Jahmyr Gibbs",
-    team: "DET",
-    position: "RB",
-    pred_next4: 17.8,
-    delta: 2.4,
-    fantasy_prev_5wk_avg: 15.4,
-  },
-  {
-    id: "p3",
-    full_name: "CeeDee Lamb",
-    team: "DAL",
-    position: "WR",
-    pred_next4: 18.9,
-    delta: 1.2,
-    fantasy_prev_5wk_avg: 17.7,
-  },
-  {
-    id: "p4",
-    full_name: "Sam LaPorta",
-    team: "DET",
-    position: "TE",
-    pred_next4: 12.6,
-    delta: -0.4,
-    fantasy_prev_5wk_avg: 13.0,
-  },
-  {
-    id: "p5",
-    full_name: "Brock Purdy",
-    team: "SF",
-    position: "QB",
-    pred_next4: 19.2,
-    delta: 0.8,
-    fantasy_prev_5wk_avg: 18.4,
-  },
-  {
-    id: "p6",
-    full_name: "Bijan Robinson",
-    team: "ATL",
-    position: "RB",
-    pred_next4: 16.1,
-    delta: -1.0,
-    fantasy_prev_5wk_avg: 17.1,
-  },
-];
 
 export default function App() {
   const [params, setParams] = useState({
@@ -89,31 +33,36 @@ export default function App() {
   const [positionFilter, setPositionFilter] = useState("All");
   const [minPred, setMinPred] = useState("0");
   const [minDelta, setMinDelta] = useState("0");
-  const apiBase = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
+  const [modelOutputs, setModelOutputs] = useState([]);
+
 
   useEffect(() => {
-    const apiUrl = `${apiBase}/predictions/runs/list`
-    const fetchAPI = async () => {
-      const response = await fetch(apiUrl)
-      const data = await response.json()
-      setLastRuns(data)
+    const loadHistoryListOnStart = async () => {
+      try {
+        const runs = await listRuns(15);
+        setLastRuns(runs);
+      } catch (e) {
+        throw new Error(`Error on startup: ${e.message}`);
+      }
     }
-    fetchAPI()
-  }, [apiBase]);
+    loadHistoryListOnStart();
+  }, []);
 
-  const handleHistoryListItemClick = (run_uuid) => {
-    const apiUrl = `${apiBase}/predictions/runs/${run_uuid}`
-    const fetchAPI = async () => {
-      const response = await fetch(apiUrl)
-      const data = await response.json()
-      return data
+
+  const handleHistoryListItemClick = async (run_uuid) => {
+    try {
+      const playerData = await getRunPredictions(run_uuid);
+      setModelOutputs(playerData)
+    } catch (e) {
+      throw new Error(`Error when clicking history list item: ${e.message}`);
     }
-    data = fetchAPI()
   }
+
 
   const handleParamChange = (name, rawValue) => {
     setParams((prev) => ({ ...prev, [name]: rawValue }));
   };
+
 
   const handleTrain = async () => {
     setIsTraining(true);
@@ -130,34 +79,31 @@ export default function App() {
       reg_alpha: Number(params.reg_alpha),
     };
     try {
-      const data = await trainModel(payload)
-      const runs = await listRuns(15)
-      setLastRuns(runs)
+      // ignoring data because trainModel endpoint returns the latest run
+      // but currently we do runs by position so you would only be returning
+      // the more recent run and not all the positions in the specific "run"
+      const data = await trainModel(payload);
+      const runs = await listRuns(15);
+      setLastRuns(runs);
     } catch (e) {
-      setTrainError(e.message)
-    } finally {
-      setIsTraining(false)
-    }
-    /*
-    try {
-      const response = await fetch(`${apiBase}/train`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) {
-        throw new Error(`Train failed (${response.status})`);
-      }
-      const data = await response.json();
-      setLastRuns((prev) => [data, ...prev]);
-    } catch (error) {
-      setTrainError(error instanceof Error ? error.message : "Train failed");
+      setTrainError(e.message);
     } finally {
       setIsTraining(false);
     }
-      */
   };
 
+  /*
+  TODO - remove MOCK_RESULTS and use modelOutputs state to created filteredResults
+  {
+    id: "p1",
+    full_name: "Josh Allen",
+    team: "BUF",
+    position: "QB",
+    pred_next4: 23.4,
+    delta: 3.1,
+    fantasy_prev_5wk_avg: 20.3,
+  }
+  */
   const parsedMinPred = Number.parseFloat(minPred);
   const parsedMinDelta = Number.parseFloat(minDelta);
   const minPredValue = Number.isNaN(parsedMinPred) ? 0 : parsedMinPred;
