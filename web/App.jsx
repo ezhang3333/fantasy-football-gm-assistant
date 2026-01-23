@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./css/App.css";
 import ModelFilter from "./ModelFilter.jsx";
 import HistoryListItem from "./HistoryListItem.jsx";
+import { trainModel, listRuns } from "./api/prediction.js";
 
 const FILTERS = [
   { name: "n_estimators", label: "n_estimators", min: 1, step: 1 },
@@ -100,6 +101,16 @@ export default function App() {
     fetchAPI()
   }, [apiBase]);
 
+  const handleHistoryListItemClick = (run_uuid) => {
+    const apiUrl = `${apiBase}/predictions/runs/${run_uuid}`
+    const fetchAPI = async () => {
+      const response = await fetch(apiUrl)
+      const data = await response.json()
+      return data
+    }
+    data = fetchAPI()
+  }
+
   const handleParamChange = (name, rawValue) => {
     setParams((prev) => ({ ...prev, [name]: rawValue }));
   };
@@ -118,7 +129,16 @@ export default function App() {
       reg_lambda: Number(params.reg_lambda),
       reg_alpha: Number(params.reg_alpha),
     };
-
+    try {
+      const data = await trainModel(payload)
+      const runs = await listRuns(15)
+      setLastRuns(runs)
+    } catch (e) {
+      setTrainError(e.message)
+    } finally {
+      setIsTraining(false)
+    }
+    /*
     try {
       const response = await fetch(`${apiBase}/train`, {
         method: "POST",
@@ -135,6 +155,7 @@ export default function App() {
     } finally {
       setIsTraining(false);
     }
+      */
   };
 
   const parsedMinPred = Number.parseFloat(minPred);
@@ -179,7 +200,11 @@ export default function App() {
           <div className="sidebar-title">Training History</div>
           <div className="history-list scroll-container">
             {lastRuns.map((prediction_run) => (
-              <HistoryListItem key={prediction_run.run_uuid} runData={prediction_run}/>
+              <HistoryListItem 
+                key={prediction_run.run_uuid} 
+                runData={prediction_run}
+                handleClick={handleHistoryListItemClick}
+              />
             ))}
           </div>
           <div className="history-footer">
