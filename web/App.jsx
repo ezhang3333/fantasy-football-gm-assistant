@@ -3,17 +3,8 @@ import "./css/App.css";
 import ModelFilter from "./ModelFilter.jsx";
 import HistoryListItem from "./HistoryListItem.jsx";
 import { trainModel, listRuns, getRunPredictions } from "./api/prediction.js";
-
-
-const FILTERS = [
-  { name: "n_estimators", label: "n_estimators", min: 1, step: 1 },
-  { name: "learning_rate", label: "learning_rate", min: 0, max: 1, step: 0.01 },
-  { name: "max_depth", label: "max_depth", min: 1, step: 1 },
-  { name: "subsample", label: "subsample", min: 0, max: 1, step: 0.01 },
-  { name: "colsample_bytree", label: "colsample_bytree", min: 0, max: 1, step: 0.01 },
-  { name: "reg_lambda", label: "reg_lambda", min: 0, step: 0.1 },
-  { name: "reg_alpha", label: "reg_alpha", min: 0, step: 0.1 },
-];
+import { MODEL_FILTERS } from "./constants.js";
+import { formatOneDecimal, getRowKey } from "./util.js";
 
 
 export default function App() {
@@ -35,7 +26,6 @@ export default function App() {
   const [minDelta, setMinDelta] = useState("0");
   const [modelOutputs, setModelOutputs] = useState([]);
 
-
   useEffect(() => {
     const loadHistoryListOnStart = async () => {
       try {
@@ -48,7 +38,6 @@ export default function App() {
     loadHistoryListOnStart();
   }, []);
 
-
   const handleHistoryListItemClick = async (run_uuid) => {
     try {
       const playerData = await getRunPredictions(run_uuid);
@@ -58,11 +47,9 @@ export default function App() {
     }
   }
 
-
   const handleParamChange = (name, rawValue) => {
     setParams((prev) => ({ ...prev, [name]: rawValue }));
   };
-
 
   const handleTrain = async () => {
     setIsTraining(true);
@@ -109,16 +96,22 @@ export default function App() {
     return true;
   });
 
-  const formatOneDecimal = (value) => {
-    const num = Number(value);
-    return Number.isFinite(num) ? num.toFixed(1) : "N/A";
+  const hasOutputs = modelOutputs.length > 0;
+  const hasFilteredResults = filteredResults.length > 0;
+  const isInitialEmptyState = !hasOutputs;
+
+  const handleLoadLatestRun = async () => {
+    if (lastRuns.length === 0) {
+      return;
+    }
+    const latestRun = lastRuns[0];
+    await handleHistoryListItemClick(latestRun.run_uuid);
   };
 
-  const getRowKey = (row, index) => {
-    if (row.gsis_id) {
-      return `${row.gsis_id}-${row.season ?? "s"}-${row.week ?? "w"}`;
-    }
-    return `${row.full_name ?? "player"}-${row.team ?? "team"}-${index}`;
+  const handleResetFilters = () => {
+    setPositionFilter("All");
+    setMinPred("0");
+    setMinDelta("0");
   };
 
   return (
@@ -129,7 +122,7 @@ export default function App() {
           <div className="sidebar-subtitle">Fine-tune training inputs</div>
         </div>
 
-        {FILTERS.map((f) => (
+        {MODEL_FILTERS.map((f) => (
           <ModelFilter
             key={f.name}
             name={f.name}
@@ -247,18 +240,67 @@ export default function App() {
               <div>delta</div>
               <div>prev_5wk_avg</div>
             </div>
-            {filteredResults.map((row, index) => (
-              <div key={getRowKey(row, index)} className="results-row">
-                <div className="player-cell">{row.full_name}</div>
-                <div>{row.team}</div>
-                <div>{row.position}</div>
-                <div>{formatOneDecimal(row.pred_next4)}</div>
-                <div className={row.delta >= 0 ? "delta up" : "delta down"}>
-                  {formatOneDecimal(row.delta)}
+            <div className="results-table-output-container scroll-container">
+              {hasFilteredResults ? (
+                filteredResults.map((row, index) => (
+                  <div key={getRowKey(row, index)} className="results-row">
+                    <div className="player-cell">{row.full_name}</div>
+                    <div>{row.team}</div>
+                    <div>{row.position}</div>
+                    <div>{formatOneDecimal(row.pred_next4)}</div>
+                    <div className={row.delta >= 0 ? "delta up" : "delta down"}>
+                      {formatOneDecimal(row.delta)}
+                    </div>
+                    <div>{formatOneDecimal(row.fantasy_prev_5wk_avg)}</div>
+                  </div>
+                ))
+              ) : (
+                <div className="results-empty-state">
+                  {isInitialEmptyState ? (
+                    <>
+                      <div className="empty-title">No predictions yet</div>
+                      <div className="empty-body">
+                        Select a run from Training History or train a new model.
+                      </div>
+                      <div className="empty-actions">
+                        <button
+                          className="empty-button primary"
+                          type="button"
+                          onClick={handleLoadLatestRun}
+                          disabled={lastRuns.length === 0 || isTraining}
+                        >
+                          Load latest run
+                        </button>
+                        <button
+                          className="empty-button secondary"
+                          type="button"
+                          onClick={handleTrain}
+                          disabled={isTraining}
+                        >
+                          {isTraining ? "Training..." : "Train model"}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="empty-title">No results match these filters</div>
+                      <div className="empty-body">
+                        Try resetting filters or loosening your thresholds.
+                      </div>
+                      <div className="empty-actions">
+                        <button
+                          className="empty-button secondary"
+                          type="button"
+                          onClick={handleResetFilters}
+                        >
+                          Reset filters
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div>{formatOneDecimal(row.fantasy_prev_5wk_avg)}</div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
         ) : (
           <div className="results-grid">
