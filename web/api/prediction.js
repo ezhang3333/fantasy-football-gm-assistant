@@ -19,8 +19,8 @@ export const listRuns = (limit = 15) => {
 };
 
 // GET /predictions/runs/{run_uuid}
-export const getRunPredictions = (runUuid) => {
-  return fetchApi(`${apiBase}/predictions/runs/${runUuid}`);
+export const getRunPredictions = (run_uuid) => {
+  return fetchApi(`${apiBase}/predictions/runs/${run_uuid}`);
 };
 
 // GET /predictions/latest/{position}

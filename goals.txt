@@ -1,11 +1,5 @@
 Goals In Priority:
 
-1. Have the react components extract this information and display it 
-2. Create a react page that can interact with the model and retrain the model whihc would then reupdate this
-   entire pipeline of database, fast api endpoint, react components
-3. Fine tune the model
-
-
-WHAT DO I NEED IN THE FRONTEND:
-
-
+1. Double check that toFixed method in App.jsx to see if you really need it. formatOneDecimal()
+2. Double check the key generation function in App.jsx called getRowKey()
+3. Make main model output page scrollable

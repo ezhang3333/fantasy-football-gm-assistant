@@ -92,23 +92,11 @@ export default function App() {
     }
   };
 
-  /*
-  TODO - remove MOCK_RESULTS and use modelOutputs state to created filteredResults
-  {
-    id: "p1",
-    full_name: "Josh Allen",
-    team: "BUF",
-    position: "QB",
-    pred_next4: 23.4,
-    delta: 3.1,
-    fantasy_prev_5wk_avg: 20.3,
-  }
-  */
   const parsedMinPred = Number.parseFloat(minPred);
   const parsedMinDelta = Number.parseFloat(minDelta);
   const minPredValue = Number.isNaN(parsedMinPred) ? 0 : parsedMinPred;
   const minDeltaValue = Number.isNaN(parsedMinDelta) ? 0 : parsedMinDelta;
-  const filteredResults = MOCK_RESULTS.filter((row) => {
+  const filteredResults = modelOutputs.filter((row) => {
     if (positionFilter !== "All" && row.position !== positionFilter) {
       return false;
     }
@@ -120,6 +108,18 @@ export default function App() {
     }
     return true;
   });
+
+  const formatOneDecimal = (value) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num.toFixed(1) : "N/A";
+  };
+
+  const getRowKey = (row, index) => {
+    if (row.gsis_id) {
+      return `${row.gsis_id}-${row.season ?? "s"}-${row.week ?? "w"}`;
+    }
+    return `${row.full_name ?? "player"}-${row.team ?? "team"}-${index}`;
+  };
 
   return (
     <div className="base-container">
@@ -247,23 +247,23 @@ export default function App() {
               <div>delta</div>
               <div>prev_5wk_avg</div>
             </div>
-            {filteredResults.map((row) => (
-              <div key={row.id} className="results-row">
+            {filteredResults.map((row, index) => (
+              <div key={getRowKey(row, index)} className="results-row">
                 <div className="player-cell">{row.full_name}</div>
                 <div>{row.team}</div>
                 <div>{row.position}</div>
-                <div>{row.pred_next4.toFixed(1)}</div>
+                <div>{formatOneDecimal(row.pred_next4)}</div>
                 <div className={row.delta >= 0 ? "delta up" : "delta down"}>
-                  {row.delta.toFixed(1)}
+                  {formatOneDecimal(row.delta)}
                 </div>
-                <div>{row.fantasy_prev_5wk_avg.toFixed(1)}</div>
+                <div>{formatOneDecimal(row.fantasy_prev_5wk_avg)}</div>
               </div>
             ))}
           </div>
         ) : (
           <div className="results-grid">
-            {filteredResults.map((row) => (
-              <div key={row.id} className="result-card">
+            {filteredResults.map((row, index) => (
+              <div key={getRowKey(row, index)} className="result-card">
                 <div className="card-header">
                   <div className="card-name">{row.full_name}</div>
                   <div className="card-meta">
@@ -273,18 +273,18 @@ export default function App() {
                 <div className="card-stats">
                   <div>
                     <div className="stat-label">pred_next4</div>
-                    <div className="stat-value">{row.pred_next4.toFixed(1)}</div>
+                    <div className="stat-value">{formatOneDecimal(row.pred_next4)}</div>
                   </div>
                   <div>
                     <div className="stat-label">delta</div>
                     <div className={`stat-value ${row.delta >= 0 ? "up" : "down"}`}>
-                      {row.delta.toFixed(1)}
+                      {formatOneDecimal(row.delta)}
                     </div>
                   </div>
                   <div>
                     <div className="stat-label">prev_5wk_avg</div>
                     <div className="stat-value">
-                      {row.fantasy_prev_5wk_avg.toFixed(1)}
+                      {formatOneDecimal(row.fantasy_prev_5wk_avg)}
                     </div>
                   </div>
                 </div>

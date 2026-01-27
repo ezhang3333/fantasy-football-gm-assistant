@@ -73,6 +73,7 @@ def _default_output_columns(df: pd.DataFrame) -> list[str]:
         "is_second_year",
         "is_undrafted",
         "percent_rostered",
+        "fantasy_prev_5wk_avg",
     ]
     out_cols = base_cols + [c for c in extras if c in df.columns] + ["pred_next4", "delta"]
     return [c for c in out_cols if c in df.columns]
