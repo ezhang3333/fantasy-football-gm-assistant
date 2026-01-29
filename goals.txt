@@ -1,6 +1,9 @@
 Goals In Priority:
 
-1. Check if you can abstract the app.jsx file to make it simpler for startup and even just code cleanup
-   to add something to the model output section on startup that either says like click train model or "select item"
 2. Figure out if you want to add any other filtering, and also adjust the buttons to increase and decrease filters because they look bad
 3. Think about replacing or removing the position filter, or beinig able to combine all the runs for each position into a single loadable model output
+4. Hook sleeper or espn fantasy apis into our app so that we can have a user link their own fantasy leagues, add user auth and oauth, and either cookies or jwt tokens for apis  
+
+
+# Additional filters
+# 
