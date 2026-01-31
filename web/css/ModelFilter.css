@@ -1,8 +1,6 @@
 .filter-container {
-  display: grid;
-  grid-template-columns: 150px 1fr;
+  display: flex;
   align-items: center;
-  gap: 12px;
   width: 100%;
   margin-bottom: 2px;
 }
@@ -14,8 +12,17 @@
   text-align: left;
 }
 
+.plus-sign {
+  margin-left: auto;
+  padding-right: 5px;
+}
+
+.minus-sign {
+  margin-left: 5px;
+}
+
 .filter-container .filter-input {
-  width: 100%;
+  width: 100px;
   box-sizing: border-box;
   border-radius: 9999px;
   padding: 4px 10px;
