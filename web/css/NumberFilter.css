@@ -1,0 +1,108 @@
+.number-filter-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 2px;
+  max-width: 350px;
+}
+
+.stacked {
+  max-width: 140px !important;
+  flex-wrap: wrap;
+  margin-right: 4px;
+  margin-left: 4px;
+  justify-content: center;
+}
+
+.number-filter-stepper {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.number-filter-container .number-filter-label {
+  color: var(--text);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-align: left;
+  text-transform: uppercase;
+  font-family: inherit;
+}
+
+.plus-sign {
+  margin-left: auto;
+  padding-right: 5px;
+}
+
+.minus-sign {
+  margin-left: 5px;
+}
+
+.number-filter-container .number-filter-input {
+  width: 100px;
+  box-sizing: border-box;
+  border-radius: 9999px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  text-align: center;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  color: var(--text);
+  appearance: textfield;
+  -moz-appearance: textfield;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.number-filter-container .number-filter-input[type="number"]::-webkit-outer-spin-button,
+.number-filter-container .number-filter-input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.number-filter-container .number-filter-input:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+  transform: translateY(-1px);
+}
+
+.number-filter-container .number-filter-input:active {
+  transform: translateY(0);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.number-filter-container .number-filter-input:focus,
+.number-filter-container .number-filter-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft), 0 8px 18px rgba(0, 0, 0, 0.25);
+  transform: translateY(0);
+}
+
+.icon-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.icon-btn:hover{
+  color:#f67373;
+  filter:drop-shadow(0 0 6px rgba(255,45,85,.7));
+}
+
+.icon-btn:active{
+  transform:scale(.95);
+  filter:drop-shadow(0 0 10px rgba(255,45,85,.95));
+}
+
+.icon-btn:focus-visible{
+  outline:none;
+  color:#f67373;
+  filter:drop-shadow(0 0 8px rgba(255,45,85,.85));
+}

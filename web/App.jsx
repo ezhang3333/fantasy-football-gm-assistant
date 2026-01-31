@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./css/App.css";
-import ModelFilter from "./ModelFilter.jsx";
+import NumberFilter from "./NumberFilter.jsx";
+import DropdownFilter from "./DropdownFilter.jsx";
 import HistoryListItem from "./HistoryListItem.jsx";
 import { trainModel, listRuns, getRunPredictions } from "./api/prediction.js";
 import { MODEL_FILTERS } from "./constants.js";
@@ -25,6 +26,7 @@ export default function App() {
   const [minPred, setMinPred] = useState("0");
   const [minDelta, setMinDelta] = useState("0");
   const [modelOutputs, setModelOutputs] = useState([]);
+  const [selectedRunId, setSelectedRunId] = useState(null);
 
   useEffect(() => {
     const loadHistoryListOnStart = async () => {
@@ -40,6 +42,7 @@ export default function App() {
 
   const handleHistoryListItemClick = async (run_uuid) => {
     try {
+      setSelectedRunId(run_uuid);
       const playerData = await getRunPredictions(run_uuid);
       setModelOutputs(playerData)
     } catch (e) {
@@ -119,11 +122,10 @@ export default function App() {
       <div className="filter-and-history-sidebar">
         <div className="sidebar-section">
           <div className="sidebar-title">Model Parameters</div>
-          <div className="sidebar-subtitle">Fine-tune training inputs</div>
         </div>
 
         {MODEL_FILTERS.map((f) => (
-          <ModelFilter
+          <NumberFilter
             key={f.name}
             name={f.name}
             label={f.label}
@@ -132,6 +134,7 @@ export default function App() {
             min={f.min}
             max={f.max}
             step={f.step}
+            showIcons
           />
         ))}
 
@@ -143,6 +146,7 @@ export default function App() {
                 key={prediction_run.run_uuid} 
                 runData={prediction_run}
                 handleClick={handleHistoryListItemClick}
+                isSelected={prediction_run.run_uuid === selectedRunId}
               />
             ))}
           </div>
@@ -185,49 +189,32 @@ export default function App() {
         </div>
 
         <div className="output-filters">
-          <div className="filter-group">
-            <label className="filter-label" htmlFor="position-filter">
-              Position
-            </label>
-            <select
-              id="position-filter"
-              className="filter-select"
-              value={positionFilter}
-              onChange={(e) => setPositionFilter(e.target.value)}
-            >
-              <option value="All">All</option>
-              <option value="QB">QB</option>
-              <option value="RB">RB</option>
-              <option value="WR">WR</option>
-              <option value ="TE">TE</option>
-            </select>
-          </div>
-          <div className="filter-group">
-            <label className="filter-label" htmlFor="min-pred">
-              Min pred_next4
-            </label>
-            <input
-              id="min-pred"
-              className="filter-input"
-              type="number"
-              step="0.1"
-              value={minPred}
-              onChange={(e) => setMinPred(e.target.value)}
-            />
-          </div>
-          <div className="filter-group">
-            <label className="filter-label" htmlFor="min-delta">
-              Min delta
-            </label>
-            <input
-              id="min-delta"
-              className="filter-input"
-              type="number"
-              step="0.1"
-              value={minDelta}
-              onChange={(e) => setMinDelta(e.target.value)}
-            />
-          </div>
+          <DropdownFilter
+            id="position-filter"
+            name="position"
+            label="Position"
+            value={positionFilter}
+            onChange={(_, value) => setPositionFilter(value)}
+            options={["All", "QB", "RB", "WR", "TE"]}
+          />
+          <NumberFilter
+            id="min-pred"
+            name="minPred"
+            label="Min pred_next4"
+            value={minPred}
+            onChange={(_, value) => setMinPred(value)}
+            step="0.1"
+            stacked={true}
+          />
+          <NumberFilter
+            id="min-delta"
+            name="minDelta"
+            label="Min delta"
+            value={minDelta}
+            onChange={(_, value) => setMinDelta(value)}
+            step="0.1"
+            stacked={true}
+          />
         </div>
 
         {viewMode === "list" ? (

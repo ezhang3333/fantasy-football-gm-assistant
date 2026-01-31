@@ -19,12 +19,13 @@ function timeAgo(isoString) {
   return "just now";
 }
 
-export default function HistoryListItem({ runData, handleClick }) {
+export default function HistoryListItem({ runData, handleClick, isSelected }) {
     const label = `${runData.position} - Validated on ${runData.season} - ${timeAgo(runData.created_at)}`
     return (
         <div
             className="history-row"
             onClick={() => handleClick(runData.run_uuid)}
+            data-selected={isSelected ? "true" : "false"}
         >
             <div className="history-label">{label}</div>
         </div>
