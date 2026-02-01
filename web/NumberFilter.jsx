@@ -1,5 +1,5 @@
 import "./css/NumberFilter.css";
-import { Plus, Minus } from "lucide-react";
+import { ChevronDown, ChevronUp, Minus, Plus } from "lucide-react";
 
 export default function NumberFilter({
   name,
@@ -45,24 +45,70 @@ export default function NumberFilter({
       <label className="number-filter-label" htmlFor={inputId}>
         {label}
       </label>
-      <div className="number-filter-stepper">
-        <button type="button" className="icon-btn" onClick={() => bump(+step)} aria-label={`Increase ${label}`}>
-          <Plus className="plus-sign" size={20} />
-        </button>
-        <input
-          className="number-filter-input"
-          id={inputId}
-          name={name}
-          type="number"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(e) => onChange(name, e.target.value)}
-        />
-        <button type="button" className="icon-btn" onClick={() => bump(-step)} aria-label={`Decrease ${label}`}>
-          <Minus className="minus-sign" size={20} />
-        </button>
+      <div className={`number-filter-stepper${stacked ? " is-stacked" : ""}`}>
+        {stacked ? (
+          <>
+            <input
+              className="number-filter-input"
+              id={inputId}
+              name={name}
+              type="number"
+              min={min}
+              max={max}
+              step={step}
+              value={value}
+              onChange={(e) => onChange(name, e.target.value)}
+            />
+            <div className="number-filter-chevron-box" aria-hidden="false">
+              <button
+                type="button"
+                className="icon-btn chevron-btn"
+                onClick={() => bump(+step)}
+                aria-label={`Increase ${label}`}
+              >
+                <ChevronUp size={16} />
+              </button>
+              <button
+                type="button"
+                className="icon-btn chevron-btn"
+                onClick={() => bump(-step)}
+                aria-label={`Decrease ${label}`}
+              >
+                <ChevronDown size={16} />
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => bump(+step)}
+              aria-label={`Increase ${label}`}
+            >
+              <Plus className="plus-sign" size={20} />
+            </button>
+            <input
+              className="number-filter-input"
+              id={inputId}
+              name={name}
+              type="number"
+              min={min}
+              max={max}
+              step={step}
+              value={value}
+              onChange={(e) => onChange(name, e.target.value)}
+            />
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => bump(-step)}
+              aria-label={`Decrease ${label}`}
+            >
+              <Minus className="minus-sign" size={20} />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

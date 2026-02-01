@@ -11,7 +11,7 @@
   flex-wrap: wrap;
   margin-right: 4px;
   margin-left: 4px;
-  justify-content: center;
+  row-gap: 7px;
 }
 
 .number-filter-stepper {
@@ -21,11 +21,20 @@
   flex-wrap: nowrap;
 }
 
+.number-filter-stepper.is-stacked {
+  width: 100%;
+  gap: 4px;
+}
+
+.number-filter-stepper.is-stacked .number-filter-input {
+  width: 100%;
+  flex: 1;
+}
+
 .number-filter-container .number-filter-label {
   color: var(--text);
   font-size: 11px;
   letter-spacing: 0.16em;
-  text-align: left;
   text-transform: uppercase;
   font-family: inherit;
 }
@@ -89,6 +98,20 @@
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+}
+
+.number-filter-chevron-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-0);
+}
+
+.chevron-btn {
+  width: 20px;
+  height: 16px;
+  justify-content: center;
 }
 
 .icon-btn:hover{

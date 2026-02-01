@@ -1,3 +1,5 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import "./css/DropdownFilter.css";
 
 export default function DropdownFilter({
@@ -12,28 +14,98 @@ export default function DropdownFilter({
   selectClassName = "filter-select",
 }) {
   const selectId = id ?? `filter-${name}`;
-  const normalizedOptions = options.map((option) =>
-    typeof option === "string" ? { value: option, label: option } : option
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  const normalizedOptions = useMemo(
+    () =>
+      options.map((option) =>
+        typeof option === "string" ? { value: option, label: option } : option
+      ),
+    [options]
   );
 
+  const selectedOption =
+    normalizedOptions.find((option) => option.value === value) ??
+    normalizedOptions[0];
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  const handleSelect = (nextValue) => {
+    if (nextValue !== value) {
+      onChange(name, nextValue);
+    }
+    setIsOpen(false);
+    buttonRef.current?.focus();
+  };
+
   return (
-    <div className={containerClassName}>
+    <div className={containerClassName} ref={containerRef}>
       <label className={labelClassName} htmlFor={selectId}>
         {label}
       </label>
-      <select
-        id={selectId}
-        name={name}
-        className={selectClassName}
-        value={value}
-        onChange={(e) => onChange(name, e.target.value)}
-      >
-        {normalizedOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <div className="filter-select-wrapper">
+        <button
+          id={selectId}
+          ref={buttonRef}
+          type="button"
+          className={`${selectClassName} filter-select-trigger`}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen((open) => !open)}
+        >
+          <span className="filter-select-value">
+            {selectedOption?.label ?? "Select"}
+          </span>
+          <span className="filter-select-icon" aria-hidden="true">
+            {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </span>
+        </button>
+        {isOpen ? (
+          <ul className="filter-select-menu" role="listbox">
+            {normalizedOptions.map((option) => {
+              const isSelected = option.value === value;
+              return (
+                <li key={option.value}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    className={`filter-select-option${
+                      isSelected ? " is-selected" : ""
+                    }`}
+                    onClick={() => handleSelect(option.value)}
+                  >
+                    {option.label}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+      </div>
     </div>
   );
 }
