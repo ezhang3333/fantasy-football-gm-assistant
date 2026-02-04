@@ -62,6 +62,82 @@ body{
     padding: 24px 28px;
 }
 
+.loading-state {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px;
+}
+
+.loading-orbit {
+    position: relative;
+    width: 96px;
+    height: 96px;
+}
+
+.orbit-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(246, 115, 115, 0.35);
+    animation: orbitPulse 1.8s ease-in-out infinite;
+}
+
+.orbit-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    margin: -6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px rgba(246, 115, 115, 0.65);
+    transform-origin: 36px 0;
+    animation: orbitSpin 1.6s linear infinite;
+}
+
+.loading-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.loading-subtitle {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+@keyframes orbitPulse {
+    0% {
+        transform: scale(0.92);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.02);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.92);
+        opacity: 0.7;
+    }
+}
+
+@keyframes orbitSpin {
+    0% {
+        transform: rotate(0deg) translateX(34px);
+    }
+    100% {
+        transform: rotate(360deg) translateX(34px);
+    }
+}
+
 .sidebar-section {
     display: flex;
     flex-direction: column;
@@ -368,10 +444,44 @@ body{
 .results-header {
     text-transform: uppercase;
     font-size: 11px;
-    letter-spacing: 0.14em;
-    color: var(--text-dim);
+    letter-spacing: 0.07em;
     background: var(--bg-0);
     border: 1px solid var(--border);
+    width: 98%;
+}
+
+.header-cell.sortable {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sort-controls {
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.sort-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+}
+
+.sort-btn:hover {
+    color: var(--text);
+}
+
+.sort-btn:hover svg {
+    transform: translateY(-1px);
+}
+
+.sort-btn.is-active {
+    color: var(--accent);
 }
 
 .player-cell {
@@ -397,11 +507,11 @@ body{
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 16px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    min-height: 150px;
+    gap: 8px;
+    min-height: 100px;
 }
 
 .card-header {
@@ -424,9 +534,9 @@ body{
 }
 
 .card-stats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
 }
 
 .stat-label {
@@ -434,13 +544,20 @@ body{
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--text-muted);
+    margin-right: 6px;
 }
 
 .stat-value {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--text);
-    margin-top: 4px;
+    margin-top: 0;
+}
+
+.card-stats > div {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0;
 }
 
 .stat-value.up {

@@ -25,7 +25,7 @@
   width: 100%;
   gap: 4px;
 }
-
+  
 .number-filter-stepper.is-stacked .number-filter-input {
   width: 100%;
   flex: 1;
@@ -34,7 +34,7 @@
 .number-filter-container .number-filter-label {
   color: var(--text);
   font-size: 11px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   font-family: inherit;
 }

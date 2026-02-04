@@ -12,6 +12,7 @@ export default function DropdownFilter({
   containerClassName = "filter-container",
   labelClassName = "filter-label",
   selectClassName = "filter-select",
+  renderOption,
 }) {
   const selectId = id ?? `filter-${name}`;
   const [isOpen, setIsOpen] = useState(false);
@@ -89,17 +90,25 @@ export default function DropdownFilter({
               const isSelected = option.value === value;
               return (
                 <li key={option.value}>
-                  <button
-                    type="button"
+                  <div
                     role="option"
                     aria-selected={isSelected}
+                    tabIndex={0}
                     className={`filter-select-option${
                       isSelected ? " is-selected" : ""
                     }`}
                     onClick={() => handleSelect(option.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleSelect(option.value);
+                      }
+                    }}
                   >
-                    {option.label}
-                  </button>
+                    {renderOption
+                      ? renderOption(option, { isSelected })
+                      : option.label}
+                  </div>
                 </li>
               );
             })}
