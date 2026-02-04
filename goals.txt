@@ -1,6 +1,6 @@
 Goals In Priority:
 
-2. The list view of the model outputs doesn't look amazing
+2. Expose selecting what season to trian, validate, and predict on to the frontend
 3. Think about replacing or removing the position filter, or beinig able to combine all the runs for each position into a single loadable model output
 4. Hook sleeper or espn fantasy apis into our app so that we can have a user link their own fantasy leagues, add user auth and oauth, and either cookies or jwt tokens for apis  
 

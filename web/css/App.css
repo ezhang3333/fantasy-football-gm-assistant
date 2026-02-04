@@ -441,6 +441,14 @@ body{
     margin: 4px;
 }
 
+.results-table .results-row {
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+}
+
 .results-header {
     text-transform: uppercase;
     font-size: 11px;
