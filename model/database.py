@@ -15,6 +15,7 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS prediction_runs (
   run_uuid TEXT PRIMARY KEY,
+  batch_uuid TEXT NOT NULL,
   created_at TEXT NOT NULL,
   position TEXT NOT NULL,
   season INTEGER,
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS prediction_runs (
 CREATE TABLE IF NOT EXISTS predictions (
   prediction_id INTEGER PRIMARY KEY AUTOINCREMENT,
   run_uuid TEXT NOT NULL,
+  batch_uuid TEXT NOT NULL,
   team TEXT,
   position TEXT,
   full_name TEXT,
@@ -77,7 +79,6 @@ def _jsonable(value: Any) -> Any:
     if isinstance(value, (list, tuple)):
         return [_jsonable(v) for v in value]
     try:
-        # numpy scalar / pandas scalar
         item = getattr(value, "item", None)
         if callable(item):
             return _jsonable(item())
@@ -88,7 +89,7 @@ def _jsonable(value: Any) -> Any:
 
 def _to_records(rows: Any) -> list[Mapping[str, Any]]:
     try:
-        import pandas as pd  # type: ignore
+        import pandas as pd
 
         if isinstance(rows, pd.DataFrame):
             return list(rows.to_dict(orient="records"))
@@ -96,7 +97,7 @@ def _to_records(rows: Any) -> list[Mapping[str, Any]]:
         pass
 
     if isinstance(rows, Sequence):
-        return list(rows)  # type: ignore[return-value]
+        return list(rows)
 
     raise TypeError("rows must be a pandas DataFrame or a sequence of dict-like records")
 
@@ -202,6 +203,7 @@ class PredictionStore:
     def create_run(
         self,
         *,
+        batch_uuid: str,
         position: str,
         season: int | None,
         week: int | None,
@@ -216,16 +218,17 @@ class PredictionStore:
         with self._connect() as conn:
             conn.execute(
                 """
-                INSERT INTO prediction_runs (run_uuid, created_at, position, season, week, data_dir, model_dir, meta_json)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO prediction_runs (run_uuid, batch_uuid, created_at, position, season, week, data_dir, model_dir, meta_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (run_uuid, created_at, position, season, week, data_dir, model_dir, meta_json),
+                (run_uuid, batch_uuid, created_at, position, season, week, data_dir, model_dir, meta_json),
             )
         return run_uuid
 
     def save_predictions(
         self,
         run_uuid: str,
+        batch_uuid: str,
         rows: Any,
         *,
         payload_cols: Sequence[str] | None = None,
@@ -258,6 +261,7 @@ class PredictionStore:
             to_insert.append(
                 (
                     run_uuid,
+                    batch_uuid,
                     None if _is_nullish(team) else str(team),
                     None if _is_nullish(position) else str(position),
                     None if _is_nullish(full_name) else str(full_name),
@@ -280,7 +284,7 @@ class PredictionStore:
             cur = conn.executemany(
                 """
                 INSERT INTO predictions (
-                  run_uuid, team, position, full_name, gsis_id, season, week,
+                  run_uuid, batch_uuid, team, position, full_name, gsis_id, season, week,
                   years_exp, draft_number, is_rookie, is_second_year, is_undrafted, percent_rostered,
                   pred_next4, delta, row_json
                 )

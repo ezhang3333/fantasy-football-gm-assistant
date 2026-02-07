@@ -10,6 +10,7 @@ from model.database import PredictionStore
 from model.gbt_regression import XGBHyperParams, load_final_dataset, train_xgb_regressor
 from model.predict import _default_output_columns, predict_position
 from constants import DB_PATH
+from uuid import uuid4
 
 
 class Position(str, Enum):
@@ -102,6 +103,7 @@ async def train_models(payload: TrainRequest, store: PredictionStore = Depends(g
     )
 
     runs: list[str] = []
+    batch_uuid = uuid4().hex
     for position in payload.positions:
         df = load_final_dataset(payload.data_dir, position.value)
         train_xgb_regressor(
@@ -114,6 +116,7 @@ async def train_models(payload: TrainRequest, store: PredictionStore = Depends(g
 
         result = predict_position(position.value, data_dir=payload.data_dir, model_dir=payload.model_dir)
         run_uuid = store.create_run(
+            batch_uuid=batch_uuid,
             position=position.value,
             season=result.season,
             week=result.week,
@@ -121,7 +124,7 @@ async def train_models(payload: TrainRequest, store: PredictionStore = Depends(g
             model_dir=str(payload.model_dir),
             meta={**result.model_metadata, "train_params": asdict(params)},
         )
-        store.save_predictions(run_uuid, result.scored, payload_cols=_default_output_columns(result.scored))
+        store.save_predictions(run_uuid, batch_uuid, result.scored, payload_cols=_default_output_columns(result.scored))
         runs.append(run_uuid)
     
     return store.get_latest_run()

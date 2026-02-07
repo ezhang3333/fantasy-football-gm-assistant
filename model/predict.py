@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+from uuid import uuid4
 
 import pandas as pd
 
@@ -88,17 +89,8 @@ def write_predictions_csv(result: PredictionResult, *, out_dir: str | Path) -> P
     result.scored.sort_values("pred_next4", ascending=False)[out_cols].to_csv(out_path, index=False)
     return out_path
 
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Predict next-4-week average fantasy points and rank candidates.")
-    parser.add_argument("--positions", default="QB,RB,WR,TE", help="Comma-separated: QB,RB,WR,TE")
-    parser.add_argument("--data-dir", default="pipeline_data/final", help="Path to finalized CSVs")
-    parser.add_argument("--model-dir", default="model/artifacts", help="Where models/metadata live")
-    parser.add_argument("--out-dir", default="model/outputs", help="Where to write prediction CSVs")
-    parser.add_argument("--write-db", action="store_true", help="Also store predictions in a SQLite database")
-    parser.add_argument("--db-path", default="model/outputs/predictions.sqlite3", help="SQLite path for stored predictions")
-    args = parser.parse_args()
-
+# legacy prediction function used only if predicting form the terminal
+def predict_model(args):
     store = None
     if args.write_db:
         from model.database import PredictionStore
@@ -112,7 +104,9 @@ def main() -> None:
         print(f"[{position}] wrote: {out_path}")
 
         if store is not None:
+            batch_uuid = uuid4().hex
             run_uuid = store.create_run(
+                batch_uuid=batch_uuid,
                 position=position,
                 season=result.season,
                 week=result.week,
@@ -120,8 +114,20 @@ def main() -> None:
                 model_dir=str(args.model_dir),
                 meta=result.model_metadata,
             )
-            store.save_predictions(run_uuid, result.scored, payload_cols=_default_output_columns(result.scored))
+            store.save_predictions(run_uuid, batch_uuid, result.scored, payload_cols=_default_output_columns(result.scored))
             print(f"[{position}] stored in db: {args.db_path} (run={run_uuid})")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Predict next-4-week average fantasy points and rank candidates.")
+    parser.add_argument("--positions", default="QB,RB,WR,TE", help="Comma-separated: QB,RB,WR,TE")
+    parser.add_argument("--data-dir", default="pipeline_data/final", help="Path to finalized CSVs")
+    parser.add_argument("--model-dir", default="model/artifacts", help="Where models/metadata live")
+    parser.add_argument("--out-dir", default="model/outputs", help="Where to write prediction CSVs")
+    parser.add_argument("--write-db", action="store_true", help="Also store predictions in a SQLite database")
+    parser.add_argument("--db-path", default="model/outputs/predictions.sqlite3", help="SQLite path for stored predictions")
+    args = parser.parse_args()
+    predict_model(args)
 
 
 if __name__ == "__main__":
