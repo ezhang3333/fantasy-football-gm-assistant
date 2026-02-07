@@ -20,7 +20,17 @@ function timeAgo(isoString) {
 }
 
 export default function HistoryListItem({ batchData, handleClick, isSelected }) {
-    const label = `${batchData.position} - Validated on ${batchData.season} - ${timeAgo(batchData.created_at)}`
+    let positionsLabel = "Unknown";
+    try {
+      const positions = JSON.parse(batchData.positions ?? "[]");
+      if (Array.isArray(positions) && positions.length > 0) {
+        positionsLabel = `${positions.join(", ")}`;
+      }
+    } catch (e) {
+      positionsLabel = "Unknown";
+    }
+
+    const label = `${positionsLabel} - ${timeAgo(batchData.created_at)}`;
     return (
         <div
             className="history-row"

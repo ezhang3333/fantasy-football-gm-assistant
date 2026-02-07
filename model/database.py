@@ -16,6 +16,7 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS prediction_batches (
     batch_uuid TEXT PRIMARY KEY,
     created_at TEXT NOT NULL,
+    positions TEXT,
     data_dir TEXT,
     model_dir TEXT
 );
@@ -214,6 +215,10 @@ class PredictionStore:
                     "fantasy_prev_5wk_avg": "REAL",
                 },
             )
+            _ensure_columns(
+                conn, "prediction_batches", {"positions": "TEXT"}
+            )
+
 
     def create_run(
         self,
@@ -243,19 +248,21 @@ class PredictionStore:
     def create_batch(
         self,
         *,
+        positions: Sequence[str] | None = None,
         data_dir: str | None = None,
         model_dir: str | None = None,
     ):
         batch_uuid = uuid4().hex
         created_at = _utc_now_iso()
+        positions_json = json.dumps(list(positions or []))
         
         with self._connect() as conn:
             conn.execute(
                 """
-                INSERT INTO prediction_batches (batch_uuid, created_at, data_dir, model_dir)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO prediction_batches (batch_uuid, created_at, positions, data_dir, model_dir)
+                VALUES (?, ?, ?, ?, ?)
                 """,
-                (batch_uuid, created_at, data_dir, model_dir),
+                (batch_uuid, created_at, positions_json, data_dir, model_dir),
             )
         
         return batch_uuid
@@ -427,6 +434,21 @@ class PredictionStore:
                 (limit,),
             ).fetchall()
         
+        return [dict(r) for r in rows]
+
+    def get_past_batches(self, limit: int = 30) -> list[dict[str, Any]]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT
+                    batch_uuid, created_at, positions, data_dir, model_dir
+                FROM prediction_batches
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+
         return [dict(r) for r in rows]
 
     def get_batch_prediction(self, batch_uuid: str) -> list[dict[str, Any]]:

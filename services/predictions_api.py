@@ -83,7 +83,7 @@ async def get_predictions_for_run(run_uuid: str, store: PredictionStore = Depend
 
 @app.get("/predictions/batch/past")
 async def get_past_batch_predictions(limit: int, store: PredictionStore = Depends(get_store)):
-    return store.get_past_batch_predictions(limit)
+    return store.get_past_batches(limit)
 
 
 @app.get("/predictions/batch/{batch_uuid}")
@@ -112,6 +112,7 @@ async def train_models(payload: TrainRequest, store: PredictionStore = Depends(g
     )
 
     batch_uuid = store.create_batch(
+        positions=[p.value for p in payload.positions],
         data_dir=str(payload.data_dir),
         model_dir=str(payload.model_dir)
     )
