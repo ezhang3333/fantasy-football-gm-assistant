@@ -25,7 +25,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState("list");
   const [positionFilter, setPositionFilter] = useState("All");
   const [minPred, setMinPred] = useState("0");
-  const [minDelta, setMinDelta] = useState("0");
+  const [minDelta, setMinDelta] = useState("-30");
   const [modelOutputs, setModelOutputs] = useState([]);
   const [selectedBatchId, setSelectedBatchId] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });

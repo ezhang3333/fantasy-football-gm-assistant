@@ -1,10 +1,12 @@
 Goals In Priority:
 
-2. Expose selecting what season to trian, validate, and predict on to the frontend
-4. Hook sleeper or espn fantasy apis into our app so that we can have a user link their own fantasy leagues, add user auth and oauth, and either cookies or jwt tokens for apis  
+1. Finalized data is missing some players
+1. Expose selecting what season to trian, validate, and predict, what positions to train on to the frontend
+2. Expose the metadata in the model outputs page in like a side bar for users to see
+3. Reset filter button and also each page should have memory of its last used filters
 
 Long Term Goals:
 
 1. Add some sort of agent that either talks to an LLM api or uses Langchain or Hugging Face
-2. Add authorizatio, probably JWT which oath and openID so that users can sign in with other websites like google, etc
+2. Add authorization, probably JWT which oath and openID so that users can sign in with other websites like google, etc
 3. See is it is viable to connect to sleeper leagues and espn leagues so that we can extract relevant data for a user
