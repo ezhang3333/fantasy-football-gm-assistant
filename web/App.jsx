@@ -4,7 +4,7 @@ import "./css/App.css";
 import NumberFilter from "./NumberFilter.jsx";
 import DropdownFilter from "./DropdownFilter.jsx";
 import HistoryListItem from "./HistoryListItem.jsx";
-import { trainModel, listRuns, getRunPredictions } from "./api/prediction.js";
+import { trainModel, listBatches, getBatchPredictions } from "./api/prediction.js";
 import { MODEL_FILTERS } from "./constants.js";
 import { formatOneDecimal, getRowKey } from "./util.js";
 
@@ -21,20 +21,20 @@ export default function App() {
   });
   const [isTraining, setIsTraining] = useState(false);
   const [trainError, setTrainError] = useState("");
-  const [lastRuns, setLastRuns] = useState([]);
+  const [listBatchPredictions, setListBatchPredictions] = useState([]);
   const [viewMode, setViewMode] = useState("list");
   const [positionFilter, setPositionFilter] = useState("All");
   const [minPred, setMinPred] = useState("0");
   const [minDelta, setMinDelta] = useState("0");
   const [modelOutputs, setModelOutputs] = useState([]);
-  const [selectedRunId, setSelectedRunId] = useState(null);
+  const [selectedBatchId, setSelectedBatchId] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
 
   useEffect(() => {
     const loadHistoryListOnStart = async () => {
       try {
-        const runs = await listRuns(15);
-        setLastRuns(runs);
+        const batches = await listBatches(15);
+        setListBatchPredictions(batches);
       } catch (e) {
         throw new Error(`Error on startup: ${e.message}`);
       }
@@ -42,10 +42,10 @@ export default function App() {
     loadHistoryListOnStart();
   }, []);
 
-  const handleHistoryListItemClick = async (run_uuid) => {
+  const handleHistoryListItemClick = async (batch_uuid) => {
     try {
-      setSelectedRunId(run_uuid);
-      const playerData = await getRunPredictions(run_uuid);
+      setSelectedBatchId(batch_uuid);
+      const playerData = await getBatchPredictions(batch_uuid);
       setModelOutputs(playerData)
     } catch (e) {
       throw new Error(`Error when clicking history list item: ${e.message}`);
@@ -61,6 +61,7 @@ export default function App() {
     setTrainError("");
 
     const payload = {
+      // update positions to be filterable
       positions: ["QB", "RB", "WR", "TE"],
       n_estimators: Number(params.n_estimators),
       learning_rate: Number(params.learning_rate),
@@ -71,12 +72,9 @@ export default function App() {
       reg_alpha: Number(params.reg_alpha),
     };
     try {
-      // ignoring data because trainModel endpoint returns the latest run
-      // but currently we do runs by position so you would only be returning
-      // the more recent run and not all the positions in the specific "run"
-      const data = await trainModel(payload);
-      const runs = await listRuns(15);
-      setLastRuns(runs);
+      const batch = await trainModel(payload);
+      const batches = await listBatches(15);
+      setListBatchPredictions(batches);
     } catch (e) {
       setTrainError(e.message);
     } finally {
@@ -114,12 +112,12 @@ export default function App() {
   const hasFilteredResults = filteredResults.length > 0;
   const isInitialEmptyState = !hasOutputs;
 
-  const handleLoadLatestRun = async () => {
-    if (lastRuns.length === 0) {
+  const handleLoadLatestBatch = async () => {
+    if (listBatchPredictions.length === 0) {
       return;
     }
-    const latestRun = lastRuns[0];
-    await handleHistoryListItemClick(latestRun.run_uuid);
+    const latestBatch = listBatchPredictions[0];
+    await handleHistoryListItemClick(latestBatch.batch_uuid);
   };
 
   const handleResetFilters = () => {
@@ -174,12 +172,12 @@ export default function App() {
         <div className="history-section">
           <div className="sidebar-title">Training History</div>
           <div className="history-list scroll-container">
-            {lastRuns.map((prediction_run) => (
+            {listBatchPredictions.map((prediction_batch) => (
               <HistoryListItem 
-                key={prediction_run.run_uuid} 
-                runData={prediction_run}
+                key={prediction_batch.batch_uuid} 
+                batchData={prediction_batch}
                 handleClick={handleHistoryListItemClick}
-                isSelected={prediction_run.run_uuid === selectedRunId}
+                isSelected={prediction_batch.batch_uuid === selectedBatchId}
               />
             ))}
           </div>
@@ -337,16 +335,16 @@ export default function App() {
                         <>
                           <div className="empty-title">No predictions yet</div>
                           <div className="empty-body">
-                            Select a run from Training History or train a new model.
+                            Select a batch from Training History or train a new model.
                           </div>
                           <div className="empty-actions">
                             <button
                               className="empty-button primary"
                               type="button"
-                              onClick={handleLoadLatestRun}
-                              disabled={lastRuns.length === 0 || isTraining}
+                              onClick={handleLoadLatestBatch}
+                              disabled={listBatchPredictions.length === 0 || isTraining}
                             >
-                              Load latest run
+                              Load latest Batch
                             </button>
                             <button
                               className="empty-button secondary"
@@ -426,16 +424,16 @@ export default function App() {
                       <>
                         <div className="empty-title">No predictions yet</div>
                         <div className="empty-body">
-                          Select a run from Training History or train a new model.
+                          Select a Batch from Training History or train a new model.
                         </div>
                         <div className="empty-actions">
                           <button
                             className="empty-button primary"
                             type="button"
-                            onClick={handleLoadLatestRun}
-                            disabled={lastRuns.length === 0 || isTraining}
+                            onClick={handleLoadLatestBatch}
+                            disabled={listBatchPredictions.length === 0 || isTraining}
                           >
-                            Load latest run
+                            Load latest Batch
                           </button>
                           <button
                             className="empty-button secondary"

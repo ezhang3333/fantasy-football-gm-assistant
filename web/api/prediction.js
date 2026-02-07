@@ -23,6 +23,16 @@ export const getRunPredictions = (run_uuid) => {
   return fetchApi(`${apiBase}/predictions/runs/${run_uuid}`);
 };
 
+// GET /predictions/batch/past
+export const listBatches = (limit) => {
+  return fetchApi(`${apiBase}/predictions/batch/past?limit=${limit}`);
+}
+
+// GET /predictions/batch/{batch_uuid}
+export const getBatchPredictions = (batch_uuid) => {
+  return fetchApi(`${apiBase}/predictions/batch/${batch_uuid}`);
+};
+
 // GET /predictions/latest/{position}
 export const latestPredictions = (position) => {
   return fetchApi(`${apiBase}/predictions/latest/${position}`);

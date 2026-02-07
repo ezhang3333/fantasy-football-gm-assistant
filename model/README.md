@@ -29,16 +29,6 @@ python -m model.train --positions QB,RB --val-season 2025
 
 Models + metadata are saved to `model/artifacts/<pos>/`.
 
-## Predict + Rank
-
-Predicts `pred_next4` for the latest week in the latest season and outputs candidate rankings.
-
-```powershell
-python -m model.predict
-```
-
-Outputs are written to `model/outputs/`.
-
 ## Evaluate
 
 Evaluates each position model on the validation season (from `model/artifacts/<pos>/metadata.json`) and prints a compact summary, plus optional JSON output.

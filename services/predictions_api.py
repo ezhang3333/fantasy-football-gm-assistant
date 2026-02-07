@@ -10,7 +10,6 @@ from model.database import PredictionStore
 from model.gbt_regression import XGBHyperParams, load_final_dataset, train_xgb_regressor
 from model.predict import _default_output_columns, predict_position
 from constants import DB_PATH
-from uuid import uuid4
 
 
 class Position(str, Enum):
@@ -82,6 +81,16 @@ async def get_predictions_for_run(run_uuid: str, store: PredictionStore = Depend
     return store.get_predictions(run_uuid=run_uuid)
 
 
+@app.get("/predictions/batch/past")
+async def get_past_batch_predictions(limit: int, store: PredictionStore = Depends(get_store)):
+    return store.get_past_batch_predictions(limit)
+
+
+@app.get("/predictions/batch/{batch_uuid}")
+async def get_batch_prediction(batch_uuid: str, store: PredictionStore = Depends(get_store)):
+    return store.get_batch_prediction(batch_uuid)
+
+
 @app.get("/predictions/latest/{position}")
 async def get_latest_predictions(position: Position, store: PredictionStore = Depends(get_store)):
     run = store.get_latest_run(position=position.value)
@@ -102,8 +111,11 @@ async def train_models(payload: TrainRequest, store: PredictionStore = Depends(g
         reg_alpha=payload.reg_alpha,
     )
 
-    runs: list[str] = []
-    batch_uuid = uuid4().hex
+    batch_uuid = store.create_batch(
+        data_dir=str(payload.data_dir),
+        model_dir=str(payload.model_dir)
+    )
+
     for position in payload.positions:
         df = load_final_dataset(payload.data_dir, position.value)
         train_xgb_regressor(
@@ -125,6 +137,5 @@ async def train_models(payload: TrainRequest, store: PredictionStore = Depends(g
             meta={**result.model_metadata, "train_params": asdict(params)},
         )
         store.save_predictions(run_uuid, batch_uuid, result.scored, payload_cols=_default_output_columns(result.scored))
-        runs.append(run_uuid)
     
-    return store.get_latest_run()
+    return store.get_batch_prediction(batch_uuid)

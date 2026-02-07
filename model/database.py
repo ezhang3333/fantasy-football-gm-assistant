@@ -13,42 +13,54 @@ from uuid import uuid4
 SCHEMA_SQL = """
 PRAGMA foreign_keys = ON;
 
+CREATE TABLE IF NOT EXISTS prediction_batches (
+    batch_uuid TEXT PRIMARY KEY,
+    created_at TEXT NOT NULL,
+    data_dir TEXT,
+    model_dir TEXT
+);
+
 CREATE TABLE IF NOT EXISTS prediction_runs (
-  run_uuid TEXT PRIMARY KEY,
-  batch_uuid TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  position TEXT NOT NULL,
-  season INTEGER,
-  week INTEGER,
-  data_dir TEXT,
-  model_dir TEXT,
-  meta_json TEXT
+    run_uuid TEXT PRIMARY KEY,
+    batch_uuid TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    position TEXT NOT NULL,
+    season INTEGER,
+    week INTEGER,
+    data_dir TEXT,
+    model_dir TEXT,
+    meta_json TEXT,
+    FOREIGN KEY (batch_uuid) REFERENCES prediction_batches(batch_uuid) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS predictions (
-  prediction_id INTEGER PRIMARY KEY AUTOINCREMENT,
-  run_uuid TEXT NOT NULL,
-  batch_uuid TEXT NOT NULL,
-  team TEXT,
-  position TEXT,
-  full_name TEXT,
-  gsis_id TEXT,
-  season INTEGER,
-  week INTEGER,
-  years_exp REAL,
-  draft_number INTEGER,
-  is_rookie INTEGER,
-  is_second_year INTEGER,
-  is_undrafted INTEGER,
-  percent_rostered REAL,
-  pred_next4 REAL,
-  delta REAL,
-  row_json TEXT,
-  FOREIGN KEY (run_uuid) REFERENCES prediction_runs(run_uuid) ON DELETE CASCADE
+    prediction_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_uuid TEXT NOT NULL,
+    batch_uuid TEXT NOT NULL,
+    team TEXT,
+    position TEXT,
+    full_name TEXT,
+    gsis_id TEXT,
+    season INTEGER,
+    week INTEGER,
+    years_exp REAL,
+    years_exp_filled REAL,
+    draft_number INTEGER,
+    draft_number_filled INTEGER,
+    is_rookie INTEGER,
+    is_second_year INTEGER,
+    is_undrafted INTEGER,
+    percent_rostered REAL,
+    fantasy_prev_5wk_avg REAL,
+    pred_next4 REAL,
+    delta REAL,
+    FOREIGN KEY (run_uuid) REFERENCES prediction_runs(run_uuid) ON DELETE CASCADE,
+    FOREIGN KEY (batch_uuid) REFERENCES prediction_batches(batch_uuid) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_predictions_run_uuid ON predictions(run_uuid);
 CREATE INDEX IF NOT EXISTS idx_predictions_position_season_week ON predictions(position, season, week);
+CREATE INDEX IF NOT EXISTS idx_prediction_runs_batch_uuid ON prediction_runs(batch_uuid);
 """
 
 
@@ -192,11 +204,14 @@ class PredictionStore:
                 "predictions",
                 {
                     "years_exp": "REAL",
+                    "years_exp_filled": "REAL",
                     "draft_number": "INTEGER",
+                    "draft_number_filled": "INTEGER",
                     "is_rookie": "INTEGER",
                     "is_second_year": "INTEGER",
                     "is_undrafted": "INTEGER",
                     "percent_rostered": "REAL",
+                    "fantasy_prev_5wk_avg": "REAL",
                 },
             )
 
@@ -224,6 +239,26 @@ class PredictionStore:
                 (run_uuid, batch_uuid, created_at, position, season, week, data_dir, model_dir, meta_json),
             )
         return run_uuid
+    
+    def create_batch(
+        self,
+        *,
+        data_dir: str | None = None,
+        model_dir: str | None = None,
+    ):
+        batch_uuid = uuid4().hex
+        created_at = _utc_now_iso()
+        
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO prediction_batches (batch_uuid, created_at, data_dir, model_dir)
+                VALUES (?, ?, ?, ?)
+                """,
+                (batch_uuid, created_at, data_dir, model_dir),
+            )
+        
+        return batch_uuid
 
     def save_predictions(
         self,
@@ -235,11 +270,6 @@ class PredictionStore:
     ) -> int:
         records = _to_records(rows)
 
-        def pick_payload(rec: Mapping[str, Any]) -> dict[str, Any]:
-            if not payload_cols:
-                return dict(rec)
-            return {c: rec.get(c) for c in payload_cols if c in rec}
-
         to_insert: list[tuple[Any, ...]] = []
         for rec in records:
             team = rec.get("team")
@@ -249,14 +279,16 @@ class PredictionStore:
             season = rec.get("season")
             week = rec.get("week")
             years_exp = rec.get("years_exp_filled", rec.get("years_exp"))
+            years_exp_filled = rec.get("years_exp_filled")
             draft_number = rec.get("draft_number_filled", rec.get("draft_number"))
+            draft_number_filled = rec.get("draft_number_filled")
             is_rookie = rec.get("is_rookie")
             is_second_year = rec.get("is_second_year")
             is_undrafted = rec.get("is_undrafted")
             percent_rostered = rec.get("percent_rostered")
+            fantasy_prev_5wk_avg = rec.get("fantasy_prev_5wk_avg")
             pred_next4 = rec.get("pred_next4")
             delta = rec.get("delta")
-            row_json = json.dumps(_jsonable(pick_payload(rec)))
 
             to_insert.append(
                 (
@@ -269,14 +301,16 @@ class PredictionStore:
                     _to_int(season),
                     _to_int(week),
                     _to_float(years_exp),
+                    _to_float(years_exp_filled),
                     _to_int(draft_number),
+                    _to_int(draft_number_filled),
                     _to_int01(is_rookie),
                     _to_int01(is_second_year),
                     _to_int01(is_undrafted),
                     _to_float(percent_rostered),
+                    _to_float(fantasy_prev_5wk_avg),
                     _to_float(pred_next4),
                     _to_float(delta),
-                    row_json,
                 )
             )
 
@@ -285,12 +319,12 @@ class PredictionStore:
                 """
                 INSERT INTO predictions (
                   run_uuid, batch_uuid, team, position, full_name, gsis_id, season, week,
-                  years_exp, draft_number, is_rookie, is_second_year, is_undrafted, percent_rostered,
-                  pred_next4, delta, row_json
+                  years_exp, years_exp_filled, draft_number, draft_number_filled, is_rookie, is_second_year, is_undrafted,
+                  percent_rostered, fantasy_prev_5wk_avg, pred_next4, delta
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?,
                         ?, ?, ?, ?, ?, ?,
-                        ?, ?, ?)
+                        ?, ?, ?, ?, ?, ?)
                 """,
                 to_insert,
             )
@@ -361,8 +395,8 @@ class PredictionStore:
                 f"""
                 SELECT
                   team, position, full_name, gsis_id, season, week,
-                  years_exp, draft_number, is_rookie, is_second_year, is_undrafted, percent_rostered,
-                  pred_next4, delta, row_json
+                  years_exp, years_exp_filled, draft_number, draft_number_filled, is_rookie, is_second_year, is_undrafted,
+                  percent_rostered, fantasy_prev_5wk_avg, pred_next4, delta
                 FROM predictions
                 WHERE run_uuid = ?
                 ORDER BY pred_next4 DESC
@@ -371,15 +405,46 @@ class PredictionStore:
                 params,
             ).fetchall()
 
-        out: list[dict[str, Any]] = []
-        for r in rows:
-            base = dict(r)
-            try:
-                payload = json.loads(base.pop("row_json") or "{}")
-            except Exception:
-                payload = {}
-            out.append({**base, **payload})
-        return out
+        return [dict(r) for r in rows]
+    
+    def get_past_batch_predictions(self, limit: int = 30) -> list[dict[str, Any]]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT 
+                    team, position, full_name, gsis_id, season, week,
+                    years_exp, years_exp_filled, draft_number, draft_number_filled, is_rookie, is_second_year, is_undrafted,
+                    percent_rostered, fantasy_prev_5wk_avg, pred_next4, delta
+                FROM predictions p
+                WHERE batch_uuid IN (
+                    SELECT batch_uuid
+                    FROM prediction_batches
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                    )
+                ORDER BY pred_next4 DESC
+                """,
+                (limit,),
+            ).fetchall()
+        
+        return [dict(r) for r in rows]
+
+    def get_batch_prediction(self, batch_uuid: str) -> list[dict[str, Any]]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT 
+                    team, position, full_name, gsis_id, season, week,
+                    years_exp, years_exp_filled, draft_number, draft_number_filled, is_rookie, is_second_year, is_undrafted,
+                    percent_rostered, fantasy_prev_5wk_avg, pred_next4, delta
+                FROM predictions p
+                WHERE batch_uuid = ?
+                ORDER BY pred_next4 DESC
+                """,
+                (batch_uuid,),
+            ).fetchall()
+
+            return [dict(r) for r in rows]
 
     def get_top_predictions(
         self,
