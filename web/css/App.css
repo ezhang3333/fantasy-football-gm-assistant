@@ -53,6 +53,92 @@ body{
     height: 100%;
 }
 
+.sidebar-panel {
+    display: flex;
+    flex-direction: column;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+}
+
+.sidebar-panel-history {
+    flex: 1;
+    min-height: 0;
+}
+
+.sidebar-panel-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 2px 6px 2px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.sidebar-panel-header:hover {
+    background: transparent;
+}
+
+.sidebar-panel-header:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--accent-soft);
+}
+
+.sidebar-panel-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+}
+
+.sidebar-panel-chevron {
+    display: inline-flex;
+    align-items: center;
+    color: var(--text-muted);
+}
+
+.sidebar-panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+    opacity: 1;
+    transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease;
+    padding: 4px 0 10px 0;
+}
+
+.sidebar-panel-body.model {
+    max-height: 620px;
+}
+
+.sidebar-panel-body.training {
+    max-height: 300px;
+}
+
+.sidebar-panel-body.history {
+    max-height: 1000px;
+    flex: 1;
+    min-height: 0;
+}
+
+.sidebar-panel-body.is-collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    gap: 0;
+}
+
+.sidebar-panel-body.history.is-collapsed {
+    flex: 0;
+    min-height: 0;
+}
+
 .output-container {
     flex: 1;
     min-width: 0;
@@ -176,6 +262,7 @@ body{
     overflow: auto;
     flex: 1;
     min-height: 0;
+    padding-right: 4px;
 }
 
 .history-row {
@@ -284,6 +371,14 @@ body{
 
 .validation-season-section {
     gap: 6px;
+}
+
+.validation-season-title {
+    color: var(--text);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: inherit;
 }
 
 .sidebar-dropdown-container {

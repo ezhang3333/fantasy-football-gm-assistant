@@ -13,6 +13,12 @@ import {
 import { MODEL_FILTERS, TRAINABLE_POSITIONS } from "./constants.js";
 import { formatOneDecimal, getRowKey } from "./util.js";
 
+const SIDEBAR_SECTIONS_STORAGE_KEY = "ff.sidebar.sections.v1";
+const DEFAULT_SIDEBAR_SECTIONS = {
+  model: true,
+  training: true,
+  history: true,
+};
 
 export default function App() {
   const [params, setParams] = useState({
@@ -37,6 +43,29 @@ export default function App() {
   const [selectedTrainPositions, setSelectedTrainPositions] = useState(TRAINABLE_POSITIONS);
   const [availableValSeasons, setAvailableValSeasons] = useState([]);
   const [valSeason, setValSeason] = useState("");
+  const [sidebarSections, setSidebarSections] = useState(() => {
+    try {
+      const raw = window.localStorage.getItem(SIDEBAR_SECTIONS_STORAGE_KEY);
+      if (!raw) {
+        return DEFAULT_SIDEBAR_SECTIONS;
+      }
+      const parsed = JSON.parse(raw);
+      return {
+        model:
+          typeof parsed?.model === "boolean" ? parsed.model : DEFAULT_SIDEBAR_SECTIONS.model,
+        training:
+          typeof parsed?.training === "boolean"
+            ? parsed.training
+            : DEFAULT_SIDEBAR_SECTIONS.training,
+        history:
+          typeof parsed?.history === "boolean"
+            ? parsed.history
+            : DEFAULT_SIDEBAR_SECTIONS.history,
+      };
+    } catch {
+      return DEFAULT_SIDEBAR_SECTIONS;
+    }
+  });
 
   useEffect(() => {
     const loadHistoryListOnStart = async () => {
@@ -75,6 +104,10 @@ export default function App() {
       setValSeason("");
     });
   }, [selectedTrainPositions]);
+
+  useEffect(() => {
+    window.localStorage.setItem(SIDEBAR_SECTIONS_STORAGE_KEY, JSON.stringify(sidebarSections));
+  }, [sidebarSections]);
 
   const handleHistoryListItemClick = async (batch_uuid) => {
     try {
@@ -203,78 +236,138 @@ export default function App() {
     });
   };
 
+  const toggleSidebarSection = (sectionKey) => {
+    setSidebarSections((prev) => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey],
+    }));
+  };
+
+  const getChevronForSection = (isOpen) => (isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />);
+
   return (
     <div className="base-container">
       <div className="filter-and-history-sidebar">
-        <div className="sidebar-section">
-          <div className="sidebar-title">Model Parameters</div>
-        </div>
-
-        {MODEL_FILTERS.map((f) => (
-          <NumberFilter
-            key={f.name}
-            name={f.name}
-            label={f.label}
-            value={params[f.name]}
-            onChange={handleParamChange}
-            min={f.min}
-            max={f.max}
-            step={f.step}
-            showIcons
-          />
-        ))}
-        <div className="sidebar-section">
-          <div className="sidebar-title">Train Positions</div>
-          <div className="train-position-picker">
-            {TRAINABLE_POSITIONS.map((position) => (
-              <button
-                key={position}
-                type="button"
-                className={`position-toggle${selectedTrainPositions.includes(position) ? " is-active" : ""}`}
-                onClick={() => toggleTrainPosition(position)}
-              >
-                {position}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="sidebar-section validation-season-section">
-          <div className="sidebar-title">Validation Season</div>
-          <DropdownFilter
-            id="validation-season"
-            name="val_season"
-            label="Season"
-            value={valSeason}
-            onChange={(_, value) => setValSeason(value)}
-            options={valSeasonOptions}
-            containerClassName="sidebar-dropdown-container"
-            labelClassName="sidebar-dropdown-label"
-            selectClassName="sidebar-dropdown-select"
-          />
-        </div>
-
-        <div className="history-section">
-          <div className="sidebar-title">Training History</div>
-          <div className="history-list scroll-container">
-            {listBatchPredictions.map((prediction_batch) => (
-              <HistoryListItem 
-                key={prediction_batch.batch_uuid} 
-                batchData={prediction_batch}
-                handleClick={handleHistoryListItemClick}
-                isSelected={prediction_batch.batch_uuid === selectedBatchId}
+        <div className="sidebar-panel">
+          <button
+            type="button"
+            className="sidebar-panel-header"
+            aria-expanded={sidebarSections.model}
+            aria-controls="sidebar-section-model"
+            onClick={() => toggleSidebarSection("model")}
+          >
+            <span className="sidebar-panel-title">Model Parameters</span>
+            <span className="sidebar-panel-chevron" aria-hidden="true">
+              {getChevronForSection(sidebarSections.model)}
+            </span>
+          </button>
+          <div
+            id="sidebar-section-model"
+            className={`sidebar-panel-body model${sidebarSections.model ? "" : " is-collapsed"}`}
+          >
+            {MODEL_FILTERS.map((f) => (
+              <NumberFilter
+                key={f.name}
+                name={f.name}
+                label={f.label}
+                value={params[f.name]}
+                onChange={handleParamChange}
+                min={f.min}
+                max={f.max}
+                step={f.step}
+                showIcons
               />
             ))}
           </div>
-          <div className="history-footer">
-            {trainError ? <div className="history-time">{trainError}</div> : null}
-            <button
-              className="train-button"
-              type="button"
-              onClick={handleTrain}
-              disabled={!canTrain}
-            >
-              {isTraining ? "Training..." : "Train Model"}
-            </button>
+        </div>
+
+        <div className="sidebar-panel">
+          <button
+            type="button"
+            className="sidebar-panel-header"
+            aria-expanded={sidebarSections.training}
+            aria-controls="sidebar-section-training"
+            onClick={() => toggleSidebarSection("training")}
+          >
+            <span className="sidebar-panel-title">Training Parameters</span>
+            <span className="sidebar-panel-chevron" aria-hidden="true">
+              {getChevronForSection(sidebarSections.training)}
+            </span>
+          </button>
+          <div
+            id="sidebar-section-training"
+            className={`sidebar-panel-body training${sidebarSections.training ? "" : " is-collapsed"}`}
+          >
+            <div className="sidebar-section">
+              <div className="validation-season-title">Position</div>
+              <div className="train-position-picker">
+                {TRAINABLE_POSITIONS.map((position) => (
+                  <button
+                    key={position}
+                    type="button"
+                    className={`position-toggle${selectedTrainPositions.includes(position) ? " is-active" : ""}`}
+                    onClick={() => toggleTrainPosition(position)}
+                  >
+                    {position}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="sidebar-section validation-season-section">
+              <div className="validation-season-title">Validation Season</div>
+              <DropdownFilter
+                id="validation-season"
+                name="val_season"
+                label=""
+                value={valSeason}
+                onChange={(_, value) => setValSeason(value)}
+                options={valSeasonOptions}
+                containerClassName="sidebar-dropdown-container"
+                labelClassName="sidebar-dropdown-label"
+                selectClassName="sidebar-dropdown-select"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="sidebar-panel sidebar-panel-history">
+          <button
+            type="button"
+            className="sidebar-panel-header"
+            aria-expanded={sidebarSections.history}
+            aria-controls="sidebar-section-history"
+            onClick={() => toggleSidebarSection("history")}
+          >
+            <span className="sidebar-panel-title">Training History</span>
+            <span className="sidebar-panel-chevron" aria-hidden="true">
+              {getChevronForSection(sidebarSections.history)}
+            </span>
+          </button>
+          <div
+            id="sidebar-section-history"
+            className={`sidebar-panel-body history${sidebarSections.history ? "" : " is-collapsed"}`}
+          >
+            <div className="history-list scroll-container">
+              {listBatchPredictions.map((prediction_batch) => (
+                <HistoryListItem 
+                  key={prediction_batch.batch_uuid} 
+                  batchData={prediction_batch}
+                  handleClick={handleHistoryListItemClick}
+                  isSelected={prediction_batch.batch_uuid === selectedBatchId}
+                />
+              ))}
+            </div>
+            <div className="history-footer">
+              {trainError ? <div className="history-time">{trainError}</div> : null}
+              <button
+                className="train-button"
+                type="button"
+                onClick={handleTrain}
+                disabled={!canTrain}
+              >
+                {isTraining ? "Training..." : "Train Model"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

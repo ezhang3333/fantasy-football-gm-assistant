@@ -64,9 +64,11 @@ export default function DropdownFilter({
 
   return (
     <div className={containerClassName} ref={containerRef}>
-      <label className={labelClassName} htmlFor={selectId}>
-        {label}
-      </label>
+      {label ? (
+        <label className={labelClassName} htmlFor={selectId}>
+          {label}
+        </label>
+      ) : null}
       <div className="filter-select-wrapper">
         <button
           id={selectId}
