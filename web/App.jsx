@@ -5,7 +5,7 @@ import NumberFilter from "./NumberFilter.jsx";
 import DropdownFilter from "./DropdownFilter.jsx";
 import HistoryListItem from "./HistoryListItem.jsx";
 import { trainModel, listBatches, getBatchPredictions } from "./api/prediction.js";
-import { MODEL_FILTERS } from "./constants.js";
+import { MODEL_FILTERS, TRAINABLE_POSITIONS } from "./constants.js";
 import { formatOneDecimal, getRowKey } from "./util.js";
 
 
@@ -29,6 +29,8 @@ export default function App() {
   const [modelOutputs, setModelOutputs] = useState([]);
   const [selectedBatchId, setSelectedBatchId] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+  const [selectedTrainPositions, setSelectedTrainPositions] = useState(TRAINABLE_POSITIONS);
+  const [valSeason, setValSeason] = useState("");
 
   useEffect(() => {
     const loadHistoryListOnStart = async () => {
@@ -56,13 +58,28 @@ export default function App() {
     setParams((prev) => ({ ...prev, [name]: rawValue }));
   };
 
+  const toggleTrainPosition = (position) => {
+    setSelectedTrainPositions((prev) =>
+      prev.includes(position)
+        ? prev.filter((p) => p !== position)
+        : [...prev, position]
+    );
+  };
+
+  const isValSeasonValid = Number.isInteger(Number(valSeason)) && Number(valSeason) > 0;
+  const canTrain = !isTraining && isValSeasonValid && selectedTrainPositions.length > 0;
+
   const handleTrain = async () => {
+    if (!canTrain) {
+      return;
+    }
+
     setIsTraining(true);
     setTrainError("");
 
     const payload = {
-      // update positions to be filterable
-      positions: ["QB", "RB", "WR", "TE"],
+      positions: selectedTrainPositions,
+      val_season: Number(valSeason),
       n_estimators: Number(params.n_estimators),
       learning_rate: Number(params.learning_rate),
       max_depth: Number(params.max_depth),
@@ -72,7 +89,7 @@ export default function App() {
       reg_alpha: Number(params.reg_alpha),
     };
     try {
-      const batch = await trainModel(payload);
+      await trainModel(payload);
       const batches = await listBatches(15);
       setListBatchPredictions(batches);
     } catch (e) {
@@ -168,6 +185,29 @@ export default function App() {
             showIcons
           />
         ))}
+        <NumberFilter
+          name="val_season"
+          label="val season"
+          value={valSeason}
+          onChange={(_, value) => setValSeason(value)}
+          min={1}
+          step={1}
+        />
+        <div className="sidebar-section">
+          <div className="sidebar-title">Train Positions</div>
+          <div className="train-position-picker">
+            {TRAINABLE_POSITIONS.map((position) => (
+              <button
+                key={position}
+                type="button"
+                className={`position-toggle${selectedTrainPositions.includes(position) ? " is-active" : ""}`}
+                onClick={() => toggleTrainPosition(position)}
+              >
+                {position}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="history-section">
           <div className="sidebar-title">Training History</div>
@@ -187,7 +227,7 @@ export default function App() {
               className="train-button"
               type="button"
               onClick={handleTrain}
-              disabled={isTraining}
+              disabled={!canTrain}
             >
               {isTraining ? "Training..." : "Train Model"}
             </button>
@@ -350,7 +390,7 @@ export default function App() {
                               className="empty-button secondary"
                               type="button"
                               onClick={handleTrain}
-                              disabled={isTraining}
+                              disabled={!canTrain}
                             >
                               {isTraining ? "Training..." : "Train model"}
                             </button>
@@ -439,7 +479,7 @@ export default function App() {
                             className="empty-button secondary"
                             type="button"
                             onClick={handleTrain}
-                            disabled={isTraining}
+                            disabled={!canTrain}
                           >
                             {isTraining ? "Training..." : "Train model"}
                           </button>

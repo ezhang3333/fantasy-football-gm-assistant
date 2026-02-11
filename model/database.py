@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS prediction_batches (
     batch_uuid TEXT PRIMARY KEY,
     created_at TEXT NOT NULL,
     positions TEXT,
+    val_season INTEGER,
     data_dir TEXT,
     model_dir TEXT
 );
@@ -216,7 +217,7 @@ class PredictionStore:
                 },
             )
             _ensure_columns(
-                conn, "prediction_batches", {"positions": "TEXT"}
+                conn, "prediction_batches", {"positions": "TEXT", "val_season": "INTEGER"}
             )
 
 
@@ -249,6 +250,7 @@ class PredictionStore:
         self,
         *,
         positions: Sequence[str] | None = None,
+        val_season: int | None = None,
         data_dir: str | None = None,
         model_dir: str | None = None,
     ):
@@ -259,10 +261,10 @@ class PredictionStore:
         with self._connect() as conn:
             conn.execute(
                 """
-                INSERT INTO prediction_batches (batch_uuid, created_at, positions, data_dir, model_dir)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO prediction_batches (batch_uuid, created_at, positions, val_season, data_dir, model_dir)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (batch_uuid, created_at, positions_json, data_dir, model_dir),
+                (batch_uuid, created_at, positions_json, val_season, data_dir, model_dir),
             )
         
         return batch_uuid
@@ -441,7 +443,7 @@ class PredictionStore:
             rows = conn.execute(
                 """
                 SELECT
-                    batch_uuid, created_at, positions, data_dir, model_dir
+                    batch_uuid, created_at, positions, val_season, data_dir, model_dir
                 FROM prediction_batches
                 ORDER BY created_at DESC
                 LIMIT ?

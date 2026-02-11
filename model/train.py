@@ -16,7 +16,7 @@ def main() -> None:
     parser.add_argument("--positions", default="QB,RB,WR,TE", help="Comma-separated: QB,RB,WR,TE")
     parser.add_argument("--data-dir", default="pipeline_data/final", help="Path to finalized CSVs")
     parser.add_argument("--out-dir", default="model/artifacts", help="Where to save models and metadata")
-    parser.add_argument("--val-season", type=int, default=None, help="Season to use as validation (default: max season)")
+    parser.add_argument("--val-season", type=int, required=True, help="Season to use as validation")
     args = parser.parse_args()
 
     out_dir = Path(args.out_dir)
@@ -30,4 +30,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

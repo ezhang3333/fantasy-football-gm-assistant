@@ -2,7 +2,6 @@ from __future__ import annotations
 from dataclasses import asdict
 from enum import Enum
 from functools import lru_cache
-from pathlib import Path
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -47,7 +46,7 @@ class TrainRequest(BaseModel):
     positions: list[Position] = Field(default_factory=lambda: [Position.QB, Position.RB, Position.WR, Position.TE])
     data_dir: str = "pipeline_data/final"
     model_dir: str = "model/artifacts"
-    val_season: int | None = None
+    val_season: int = Field(ge=1)
     n_estimators: int = Field(default=300, ge=1)
     learning_rate: float = Field(default=0.1, gt=0, le=1)
     max_depth: int = Field(default=6, ge=1)
@@ -114,7 +113,8 @@ async def train_models(payload: TrainRequest, store: PredictionStore = Depends(g
     batch_uuid = store.create_batch(
         positions=[p.value for p in payload.positions],
         data_dir=str(payload.data_dir),
-        model_dir=str(payload.model_dir)
+        model_dir=str(payload.model_dir),
+        val_season=payload.val_season,
     )
 
     for position in payload.positions:

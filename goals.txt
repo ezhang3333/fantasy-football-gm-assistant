@@ -1,6 +1,6 @@
 Goals In Priority:
 
-1. Finalized data is missing some players
+1. UI for Train positions buttons look mid and the val season should be moved somewhere else
 1. Expose selecting what season to trian, validate, and predict, what positions to train on to the frontend
 2. Expose the metadata in the model outputs page in like a side bar for users to see
 3. Reset filter button and also each page should have memory of its last used filters

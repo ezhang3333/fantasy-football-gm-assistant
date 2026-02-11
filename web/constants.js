@@ -7,3 +7,5 @@ export const MODEL_FILTERS = [
   { name: "reg_lambda", label: "lambda", min: 0, step: 0.1 },
   { name: "reg_alpha", label: "alpha", min: 0, step: 0.1 },
 ];
+
+export const TRAINABLE_POSITIONS = ["QB", "RB", "WR", "TE"];

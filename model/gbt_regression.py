@@ -33,14 +33,13 @@ def load_final_dataset(data_dir: str | Path, position: Position) -> pd.DataFrame
     return df
 
 
-def time_split_by_season(df: pd.DataFrame, val_season: int | None = None) -> tuple[pd.DataFrame, pd.DataFrame, int]:
+def time_split_by_season(df: pd.DataFrame, val_season: int) -> tuple[pd.DataFrame, pd.DataFrame, int]:
     season_num = pd.to_numeric(df["season"], errors="coerce")
     seasons = season_num.dropna().astype(int)
     if seasons.empty:
         raise ValueError("No valid `season` values found for time-based split.")
 
-    inferred_val_season = int(seasons.max())
-    val_season = inferred_val_season if val_season is None else int(val_season)
+    val_season = int(val_season)
 
     season_int = season_num.astype("Int64")
     train_mask = (season_int < val_season).fillna(False)
@@ -171,7 +170,7 @@ def train_xgb_regressor(
     df: pd.DataFrame,
     out_dir: str | Path,
     *,
-    val_season: int | None = None,
+    val_season: int,
     random_state: int = 7,
     params: XGBHyperParams | None = None,
 ) -> TrainedModel:
