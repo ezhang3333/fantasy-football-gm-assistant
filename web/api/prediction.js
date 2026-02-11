@@ -38,6 +38,17 @@ export const latestPredictions = (position) => {
   return fetchApi(`${apiBase}/predictions/latest/${position}`);
 };
 
+// GET /train/options/seasons?positions=QB,RB
+export const listValidValSeasons = (positions) => {
+  const params = new URLSearchParams();
+  if (Array.isArray(positions) && positions.length > 0) {
+    params.set("positions", positions.join(","));
+  }
+  const query = params.toString();
+  const suffix = query ? `?${query}` : "";
+  return fetchApi(`${apiBase}/train/options/seasons${suffix}`);
+};
+
 // POST /train
 export const trainModel = (payload) => {
   return fetchApi(`${apiBase}/train`, {

@@ -4,7 +4,12 @@ import "./css/App.css";
 import NumberFilter from "./NumberFilter.jsx";
 import DropdownFilter from "./DropdownFilter.jsx";
 import HistoryListItem from "./HistoryListItem.jsx";
-import { trainModel, listBatches, getBatchPredictions } from "./api/prediction.js";
+import {
+  trainModel,
+  listBatches,
+  getBatchPredictions,
+  listValidValSeasons,
+} from "./api/prediction.js";
 import { MODEL_FILTERS, TRAINABLE_POSITIONS } from "./constants.js";
 import { formatOneDecimal, getRowKey } from "./util.js";
 
@@ -30,6 +35,7 @@ export default function App() {
   const [selectedBatchId, setSelectedBatchId] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
   const [selectedTrainPositions, setSelectedTrainPositions] = useState(TRAINABLE_POSITIONS);
+  const [availableValSeasons, setAvailableValSeasons] = useState([]);
   const [valSeason, setValSeason] = useState("");
 
   useEffect(() => {
@@ -43,6 +49,32 @@ export default function App() {
     }
     loadHistoryListOnStart();
   }, []);
+
+  useEffect(() => {
+    const loadValidationSeasons = async () => {
+      const selectedPositions = selectedTrainPositions.length > 0 ? selectedTrainPositions : undefined;
+      const response = await listValidValSeasons(selectedPositions);
+      const seasons = Array.isArray(response?.seasons)
+        ? response.seasons.map((season) => String(season))
+        : [];
+      const sortedSeasons = seasons.sort((a, b) => Number(a) - Number(b));
+      setAvailableValSeasons(sortedSeasons);
+      setValSeason((previousValue) => {
+        if (sortedSeasons.length === 0) {
+          return "";
+        }
+        if (previousValue && sortedSeasons.includes(previousValue)) {
+          return previousValue;
+        }
+        return sortedSeasons[sortedSeasons.length - 1];
+      });
+    };
+
+    loadValidationSeasons().catch(() => {
+      setAvailableValSeasons([]);
+      setValSeason("");
+    });
+  }, [selectedTrainPositions]);
 
   const handleHistoryListItemClick = async (batch_uuid) => {
     try {
@@ -66,8 +98,10 @@ export default function App() {
     );
   };
 
-  const isValSeasonValid = Number.isInteger(Number(valSeason)) && Number(valSeason) > 0;
-  const canTrain = !isTraining && isValSeasonValid && selectedTrainPositions.length > 0;
+  const canTrain =
+    !isTraining &&
+    selectedTrainPositions.length > 0 &&
+    availableValSeasons.includes(valSeason);
 
   const handleTrain = async () => {
     if (!canTrain) {
@@ -128,6 +162,10 @@ export default function App() {
   const hasOutputs = modelOutputs.length > 0;
   const hasFilteredResults = filteredResults.length > 0;
   const isInitialEmptyState = !hasOutputs;
+  const valSeasonOptions =
+    availableValSeasons.length > 0
+      ? availableValSeasons.map((season) => ({ value: season, label: season }))
+      : [{ value: "", label: "No seasons available" }];
 
   const handleLoadLatestBatch = async () => {
     if (listBatchPredictions.length === 0) {
@@ -185,14 +223,6 @@ export default function App() {
             showIcons
           />
         ))}
-        <NumberFilter
-          name="val_season"
-          label="val season"
-          value={valSeason}
-          onChange={(_, value) => setValSeason(value)}
-          min={1}
-          step={1}
-        />
         <div className="sidebar-section">
           <div className="sidebar-title">Train Positions</div>
           <div className="train-position-picker">
@@ -207,6 +237,20 @@ export default function App() {
               </button>
             ))}
           </div>
+        </div>
+        <div className="sidebar-section validation-season-section">
+          <div className="sidebar-title">Validation Season</div>
+          <DropdownFilter
+            id="validation-season"
+            name="val_season"
+            label="Season"
+            value={valSeason}
+            onChange={(_, value) => setValSeason(value)}
+            options={valSeasonOptions}
+            containerClassName="sidebar-dropdown-container"
+            labelClassName="sidebar-dropdown-label"
+            selectClassName="sidebar-dropdown-select"
+          />
         </div>
 
         <div className="history-section">

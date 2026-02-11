@@ -2,13 +2,14 @@ from __future__ import annotations
 from dataclasses import asdict
 from enum import Enum
 from functools import lru_cache
+import pandas as pd
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from model.database import PredictionStore
 from model.gbt_regression import XGBHyperParams, load_final_dataset, train_xgb_regressor
 from model.predict import _default_output_columns, predict_position
-from constants import DB_PATH
+from constants import ALL_POSITIONS, DB_PATH
 
 
 class Position(str, Enum):
@@ -42,6 +43,84 @@ def get_store() -> PredictionStore:
     return _store()
 
 
+def _positions_from_query(positions: str | None) -> list[Position]:
+    all_positions = [Position(value) for value in ALL_POSITIONS]
+    if positions is None or not positions.strip():
+        return all_positions
+
+    parsed_positions: list[Position] = []
+    invalid_positions: list[str] = []
+    seen: set[Position] = set()
+
+    for raw_value in positions.split(","):
+        value = raw_value.strip().upper()
+        if not value:
+            continue
+        try:
+            position = Position(value)
+        except ValueError:
+            invalid_positions.append(value)
+            continue
+        if position in seen:
+            continue
+        seen.add(position)
+        parsed_positions.append(position)
+
+    if invalid_positions:
+        valid_values = ", ".join(ALL_POSITIONS)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid positions: {invalid_positions}. Valid values: {valid_values}",
+        )
+    if not parsed_positions:
+        raise HTTPException(status_code=400, detail="No valid positions were provided.")
+
+    return parsed_positions
+
+
+def _compute_valid_val_seasons(data_dir: str, positions: list[Position]) -> list[int]:
+    if not positions:
+        raise HTTPException(status_code=400, detail="At least one position is required.")
+
+    shared_seasons: set[int] | None = None
+
+    for position in positions:
+        try:
+            df = load_final_dataset(data_dir, position.value)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unable to load dataset for {position.value} from {data_dir}: {exc}",
+            ) from exc
+        if "season" not in df.columns:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Dataset for {position.value} is missing the `season` column.",
+            )
+
+        season_values = (
+            pd.to_numeric(df["season"], errors="coerce")
+            .dropna()
+            .astype(int)
+            .unique()
+            .tolist()
+        )
+        seasons = sorted({int(season) for season in season_values})
+        if len(seasons) < 2:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Position {position.value} has insufficient seasons for time split "
+                    f"(found {len(seasons)}: {seasons})."
+                ),
+            )
+
+        current_set = set(seasons)
+        shared_seasons = current_set if shared_seasons is None else shared_seasons & current_set
+
+    return sorted(shared_seasons or [])
+
+
 class TrainRequest(BaseModel):
     positions: list[Position] = Field(default_factory=lambda: [Position.QB, Position.RB, Position.WR, Position.TE])
     data_dir: str = "pipeline_data/final"
@@ -54,6 +133,15 @@ class TrainRequest(BaseModel):
     colsample_bytree: float = Field(default=0.8, gt=0, le=1)
     reg_lambda: float = Field(default=1.0, ge=0)
     reg_alpha: float = Field(default=0.0, ge=0)
+
+@app.get("/train/options/seasons")
+async def get_train_val_season_options(
+    positions: str | None = Query(default=None, description="Comma-separated positions (e.g. QB,RB)"),
+    data_dir: str = Query(default="pipeline_data/final"),
+):
+    selected_positions = _positions_from_query(positions)
+    seasons = _compute_valid_val_seasons(data_dir, selected_positions)
+    return {"seasons": seasons}
 
 
 @app.get("/predictions/top")
@@ -100,6 +188,16 @@ async def get_latest_predictions(position: Position, store: PredictionStore = De
 
 @app.post("/train")
 async def train_models(payload: TrainRequest, store: PredictionStore = Depends(get_store)):
+    valid_seasons = _compute_valid_val_seasons(payload.data_dir, payload.positions)
+    if payload.val_season not in valid_seasons:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Invalid val_season={payload.val_season} for positions "
+                f"{[p.value for p in payload.positions]}. Valid seasons: {valid_seasons}"
+            ),
+        )
+
     params = XGBHyperParams(
         n_estimators=payload.n_estimators,
         learning_rate=payload.learning_rate,
